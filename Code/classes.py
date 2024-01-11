@@ -39,9 +39,9 @@ class Phone(Field):
     """class for validate phone field"""
 
     def _validate(self, value):
-        if len(value) != 10 or not value.isdigit():
-            raise ValueError("Phone number must be 10 digits")
-        
+        pattern = re.compile(r"^((\+?3)?8)?0\d{9}$")
+        if not pattern.match(value):
+            raise ValueError("Phone number is not valid")
         return f'{value} is valid phone number'
 
 class Birthday(Field):
@@ -67,16 +67,36 @@ class Birthday(Field):
         else:
             raise ValueError('Invalid date: {value}. The date is not correct.')
 
+class Email(Field):
+    def _validate(self, value):
+        pattern = r'^((([0-9A-Za-z]{1}[-0-9A-z\.]{1,}[0-9A-Za-z]{1})|([0-9А-Яа-я]{1}[-0-9А-я\.]{1,}[0-9А-Яа-я]{1}))@([-A-Za-z]{1,}\.){1,2}[-A-Za-z]{2,})$'
+        if not re.match(pattern, value):
+            raise ValueError("Invalid email address")
+
+class Address(Field):
+    def _validate(self, value):
+        # No special validation for address
+        pass
 
 class Record:
     def __init__(self, name, birthday=None):
         self.name = Name(name)
         self.phones = []
+        self.emails = []  
+        self.addresses = []  
         self.birthday = Birthday(birthday) if birthday else None
 
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
         return f'Number phone {phone} has been add'
+    
+    def add_email(self, email):  
+        self.emails.append(Email(email))
+        return f'Email {email} has been add'
+
+    def add_address(self, address):  
+        self.addresses.append(Address(address))
+        return f'Address {address} has been add'
     
     def update_birthday(self, new_birthday):
         if self.birthday is not None:
@@ -128,6 +148,8 @@ class Record:
         return {
             'name': self.name.value,
             'phones': [phone.value for phone in self.phones],
+            'emails': [email.value for email in self.emails],  # Add this line
+            'addresses': [address.value for address in self.addresses],  # Add this line
             'birthday': self.birthday.value if (self.birthday and hasattr(self.birthday, 'value')) else None
         }
 
@@ -136,10 +158,14 @@ class Record:
         record = cls(name=data['name'], birthday=data['birthday'])
         for phone in data['phones']:
             record.add_phone(phone)
+        for email in data['emails']:  # Add this loop
+            record.add_email(email)
+        for address in data['addresses']:  # Add this loop
+            record.add_address(address)
         return record
-            
+
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, emails: {'; '.join(e.value for e in self.emails)}, addresses: {'; '.join(a.value for a in self.addresses)}"
 
 class AddressBook(UserDict):
 
@@ -166,9 +192,10 @@ class AddressBook(UserDict):
         yes_no = input('Are you sure you want to delete all users? (y/n) ').lower().strip()
         if yes_no == 'y':
             self.data.clear()
-            print("All contacts cleared.")
+            return "All contacts cleared."
         else:
-             print('Removal canceled')
+            return 'Removal canceled'
+
 
     def delete(self, name):
         if name in self.data:
@@ -221,4 +248,6 @@ class AddressBook(UserDict):
                 results.append(record)
 
         return results
+###############################################
+    
     

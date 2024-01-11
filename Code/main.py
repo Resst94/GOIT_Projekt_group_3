@@ -22,47 +22,72 @@ def hello():
 def help():
     return """Please enter the command in accordance with the described capabilities (left column), for the specified type (right column).\n
     Here are some things you can do:\n
-        'add <name_contact> <phone> <birthday>'               - Add a new contact with an optional birthday.
-        'add <name_contact> <another_phone>'                  - Add an additional phone number to an existing contact.
-        'birthday <name_contact> <new_birthday_date>'         - Add or update the birthday of an existing contact.
-        'change phone <name_contact> <old_phone> <new_phone>' - Change an existing phone number of a contact.
-        'search'                                              - Search for contacts by name or phone number that match the entered string.
-        'when <name_contact>'                                 - Show the number of days until the birthday for a contact.
-        'finde <name_contact>'                                - Show all phone numbers for a contact.
-        'show all'                                            - Display all contacts.
-        'remove <name_contact> <phone_number>'                - Remove a phone number from an existing contact.
-        'delete <name_contact>'                               - Delete an entire contact.
-        'save'                                                - Save the address book to a file.
-        'load'                                                - Load the address book from a file.
-        'exit' or 'close' or 'good bye'                       - Exit the program.
-        'clear all'                                           - Clear all contacts."""
+        'add                                                    - Add a new contact with an optional birthday.
+        'add <name_contact> <another_phone>'                    - Add an additional phone number to an existing contact.
+        'birthday add <name_contact> <new_birthday_date>'       - Add or update the birthday of an existing contact.
+        'change phone <name_contact> <old_phone> <new_phone>'   - Change an existing phone number of a contact.
+        'search'                                                - Search for contacts by name or phone number that match the entered string.
+        'when <name_contact>'                                   - Show the number of days until the birthday for a contact.
+        'finde phone <name_contact>'                            - Show all phone numbers for a contact.
+        'show all'                                              - Display all contacts.
+        'remove <name_contact> <phone_number>'                  - Remove a phone number from an existing contact.
+        'delete <name_contact>'                                 - Delete an entire contact.
+        'save'                                                  - Save the address book to a file.
+        'load'                                                  - Load the address book from a file.
+        'exit' or 'close' or 'good bye'                         - Exit the program.
+        'clear all'                                             - Clear all contacts."""
+
 
 @input_error
-def add_contact(command):
-    parts = command.split(" ")
-    if len(parts) >= 2:
-        name, phone = parts[0], parts[1]
-        name_field = Name(name)
-        phone_field = Phone(phone)
-        record = Record(name=name_field.value)
-       
+def add_contact_interactive():
+    name = input("Enter the contact's name: ").strip()
+    record = Record(name)
+    added_info = []
 
-        if len(parts) >= 3:
-            birthday = ' '.join(parts[2:])
-            birthday_field = Birthday(birthday)
-            record.birthday = birthday_field
+    while True:
+        phone = input("Enter a phone number (or nothing to finish): ").strip()
+        if phone.lower() == '':
+            break
+        try:
+            record.add_phone(phone)
+            added_info.append(f"Phone number: {phone}")
+        except ValueError as e:
+            print(f"Error: {str(e)} Please try again.")
 
-        record.add_phone(phone_field.value)
-        address_book.add_record(record)
+    while True:
+        email = input("Enter an email address (or nothing to finish): ").strip()
+        if email.lower() == '':
+            break
+        try:
+            record.add_email(email)
+            added_info.append(f"Email: {email}")
+        except ValueError as e:
+            print(f"Error: {str(e)} Please try again.")
 
-        if record.birthday:
-            result = f"Contact {name} with number {phone} and birthday {record.birthday} saved."
-        else:
-            result = f"Contact {name} with number {phone} saved."
+    while True:
+        address = input("Enter an address (or nothing to finish): ").strip()
+        if address.lower() == '':
+            break
+        try:
+            record.add_address(address)
+            added_info.append(f"Address: {address}")
+        except ValueError as e:
+            print(f"Error: {str(e)} Please try again.")
 
-        return result
-    else:
-        raise ValueError("Invalid command format. Please enter name and phone.")
+    while True:
+        birthday = input("Enter the contact's birthday (or nothing if not available): ").strip()
+        if birthday.lower() == '':
+            break
+        try:
+            record.update_birthday(birthday)
+            added_info.append(f"Birthday: {birthday}")
+            break
+        except ValueError as e:
+            print(f"Error: {str(e)} Please try again.")
+
+    address_book.add_record(record)
+
+    return f"Contact {name} has been added : \n" + "\n".join(added_info)
 
 @input_error
 def change_contact(command):
@@ -232,28 +257,63 @@ def delete_contact(command):
             return f"Contact {name} not found."
     else:
         raise ValueError("Invalid command format for deleting a contact.")
+    
+@input_error
+def add_email(command):
+    parts = command.split(" ")
+    if len(parts) == 2:
+        name, email = parts[0], parts[1]
+        record = address_book.find(name)
+        if record:
+            email_field = Email(email)
+            record.add_email(email_field.value)
+            return f"Email {email} added to contact {name}."
+        else:
+            raise KeyError(f"Contact {name} not found")
+    else:
+        raise ValueError("Invalid command format. Please enter name and email.")
+
+@input_error
+def add_address(command):
+    parts = command.split(" ", 2)  # Split the command into at most 3 parts
+    if len(parts) == 3:
+        action, name, address = parts
+        if action.lower() == 'address' and name and address:
+            record = address_book.find(name)
+            if record:
+                address_field = Address(address)
+                record.add_address(address_field.value)
+                return f"Address {address} added to contact {name}."
 
 
 commands = {
+    "add": add_contact_interactive,
+    "email add": add_email,
+    "adres add": add_address,
     "sort": sort_folder,    
     "help": help,
     "hello": hello,
-    "add": add_contact,
     "change phone": change_contact,
-    "finde": get_phone,
-    "when": when_birthday,
-    "birthday ": update_birthday,
-    "remove": remove_phone_from_contact,
     "delete": delete_contact,
-    "show all": show_all_contacts,
     "save": save_to_disk,
     "load": load_from_disk,
-    "search": search_contacts,
+    "remove phone": remove_phone_from_contact,
+    "show all": show_all_contacts,
     "clear all": address_book.clear_all_contacts,
     "good bye": exit_bot,
     "close": exit_bot,
     "exit": exit_bot,
     ".": exit_bot,
+
+
+
+
+
+    "finde phone": get_phone,
+    "when birthday": when_birthday,
+    "birthday add": update_birthday,
+    "search": search_contacts,
+    
 }
 
 def choice_action(data, commands):
