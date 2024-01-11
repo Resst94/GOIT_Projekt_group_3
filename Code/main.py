@@ -1,5 +1,16 @@
+from prompt_toolkit import PromptSession
+from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.lexers import PygmentsLexer
+from pygments.lexers.sql import SqlLexer
 from classes import *
 import sort
+address_book = AddressBook()
+
+#Completer for commands in terminal:
+sql_completer = WordCompleter([
+    'add', 'birthday', 'change phone', 'search', 'when', 'finde',
+    'show all', 'remove', 'delete', 'save', 'load', 'exit', 
+    'close', 'good bye', 'clear all'], ignore_case=True)
 address_book = AddressBook()
 
 def input_error(func):
@@ -264,14 +275,21 @@ def choice_action(data, commands):
     return unknown_command, None
 
 def main():
+    session = PromptSession(
+        lexer=PygmentsLexer(SqlLexer), completer=sql_completer)
     while True:
-        data = input("\nEnter command: ").lower().strip()
-        func, args = choice_action(data, commands)
-        result = func(args) if args else func()
-        print(result)
+        try:
+            data = session.prompt("\nEnter command: ").lower().strip()
+            func, args = choice_action(data, commands)
+            result = func(args) if args else func()
+            print(result)
+        except KeyboardInterrupt:
+            continue
+        except EOFError:
+            break
         if result == "Good bye!":
             break
-
+        
 if __name__ == "__main__":
     load_from_disk()
     main()
