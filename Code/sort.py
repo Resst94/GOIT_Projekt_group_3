@@ -144,12 +144,7 @@ def remove_empty_folders(path):
                 os.rmdir(folder_path)
 
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: sort <source_folder>")
-        sys.exit(1)
-
-    source_folder = sys.argv[1]
+def main(source_folder):
 
     process_folder(source_folder)
     remove_empty_folders(source_folder)
