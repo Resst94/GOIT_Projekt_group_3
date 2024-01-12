@@ -100,23 +100,36 @@ class Title(Field):
 
 
 class Note:
-    '''class represents a single note with text'''
+    """class represents a single note with text"""
 
     def __init__(self, author, title, body):
         self.author = Name(author)
-        self.title = title
+        self.title = Title(title)
         self.body = body
+        self.created_at = datetime.now()  # Time of note creation
 
-    def save_note(self):
+    def edit_note(self, new_body):
+        self.body = new_body
+
+    def edit_note_title(self, new_title):
+        self.title.value = new_title
+
+    def edit_note_author(self, new_author):
+        self.author.value = new_author
+
+    def to_dict(self):
+        # Convert the Note instance into a dictionary
         return {
             'author': self.author.value,
-            'title': self.title,
+            'title': self.title.value,
             'body': self.body
         }
 
     @classmethod
-    def notes_dict(cls, notes):
-        return cls(notes['author'], notes['title'], notes['body'])
+    def from_dict(cls, notes):
+        # Create a new Note instance from a dictionary
+        record = cls(notes['author'], notes['title'], notes['body'])
+        return record
 
     def __str__(self):
         return f"\nAuthor: {self.author}\nTitle: {self.title}\nNote: {self.body}"
