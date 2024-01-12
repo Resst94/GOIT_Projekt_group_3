@@ -3,6 +3,7 @@ from collections import UserDict
 import re
 import pickle
 
+
 class Field:
     
     def __init__(self, value):
@@ -24,6 +25,7 @@ class Field:
     def __str__(self):
         return str(self.__value)
 
+
 class Name(Field):
     """class for validate name field"""
 
@@ -35,6 +37,7 @@ class Name(Field):
         
         return f'{value} is a valid name'
         
+
 class Phone(Field):
     """class for validate phone field"""
 
@@ -43,6 +46,7 @@ class Phone(Field):
         if not pattern.match(value):
             raise ValueError("Phone number is not valid")
         return f'{value} is valid phone number'
+
 
 class Birthday(Field):
     """class for validating birthday field"""
@@ -67,16 +71,63 @@ class Birthday(Field):
         else:
             raise ValueError('Invalid date: {value}. The date is not correct.')
 
+
 class Email(Field):
     def _validate(self, value):
         pattern = r'^((([0-9A-Za-z]{1}[-0-9A-z\.]{1,}[0-9A-Za-z]{1})|([0-9А-Яа-я]{1}[-0-9А-я\.]{1,}[0-9А-Яа-я]{1}))@([-A-Za-z]{1,}\.){1,2}[-A-Za-z]{2,})$'
         if not re.match(pattern, value):
             raise ValueError("Invalid email address")
 
+
 class Address(Field):
     def _validate(self, value):
         # No special validation for address
         pass
+
+
+class Note:
+    '''class represents a single note with text'''
+
+    def __init__(self, author, title, body):
+        self.author = Name(author)
+        self.title = title
+        self.body = body
+
+    def save_note(self):
+        return {
+            'author': self.author.value,
+            'title': self.title,
+            'body': self.body
+        }
+
+    @classmethod
+    def notes_dict(cls, notes):
+        return cls(notes['author'], notes['title'], notes['body'])
+
+    def __str__(self):
+        return f"\nAuthor: {self.author}\nTitle: {self.title}\nNote: {self.body}"
+
+
+class Notebook:
+    '''class manages a list of notes'''
+
+    def __init__(self):
+        self.notes = {}
+
+    def add_note(self, note):
+        self.notes[note.title] = note
+
+    def delete_note(self, title):
+        if title in self.notes:
+            del self.notes[title]
+
+    def find_note(self, search_query):
+        return [note for note in self.notes.values() if search_query.lower() in note.title.lower() or search_query.lower() in note.author.value.lower()]
+
+    def edit_note(self, title, new_body):
+        if title in self.notes:
+            self.notes[title].body = new_body
+
 
 class Record:
     def __init__(self, name, birthday=None):
@@ -131,6 +182,7 @@ class Record:
 
         if self.birthday is not None and self.birthday.value is not None:
             birth_day = self.birthday.value
+            birth_day = [birth_day.replace(i, '-') for i in './- ' if i in birth_day][0]
             birth_day = datetime.strptime(birth_day, "%d-%m-%Y")
 
             next_birthday = datetime(today.year, birth_day.month, birth_day.day)
@@ -166,6 +218,7 @@ class Record:
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, emails: {'; '.join(e.value for e in self.emails)}, addresses: {'; '.join(a.value for a in self.addresses)}"
+
 
 class AddressBook(UserDict):
 
@@ -248,6 +301,13 @@ class AddressBook(UserDict):
                 results.append(record)
 
         return results
-###############################################
-    
+
+    def search_by_birthday(self, number_of_days):
+        self._contact = []
+        for i in self.data.values():
+            self._birth_date = i.days_to_birthday()
+            if int(number_of_days) > self._birth_date:
+                self._contact.append(i)
+
+        return self._contact
     
