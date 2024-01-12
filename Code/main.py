@@ -90,7 +90,7 @@ def add_contact_interactive():
     return f"Contact {name} has been added : \n" + "\n".join(added_info)
 
 @input_error
-def change_contact(command):
+def change_phone(command):
     parts = command.split(" ")
     if len(parts) == 3:
         name, old_phone, new_phone = parts[0], parts[1], parts[2]
@@ -158,19 +158,30 @@ def show_all_contacts():
     if records:
         result = "All contacts:\n"
         for record in records:
+            result += f"{record.name.value}:\n"
             phones_info = ', '.join(phone.value for phone in record.phones)
-            result += f"{record.name.value}:\n  Phone numbers: {phones_info}\n  Birthday: {record.birthday}\n"
+            if phones_info:
+                result += f"  Phone numbers: {phones_info}\n"
+            if record.birthday:
+                result += f"  Birthday: {record.birthday}\n"
+            email_info = ', '.join(email.value for email in record.emails)
+            if email_info:
+                result += f"  Email: {email_info}\n"
+            address_info = ', '.join(address.value for address in record.addresses)
+            if address_info:
+                result += f"  Address: {address_info}\n"
         return result
     else:
         return "Contact list is empty"
+
 
 def exit_bot():
     save_to_disk()
     return "Good bye!"
 
 @input_error
-def unknown_command(command):
-    return f"Unknown command: {command}. Type 'help' for available commands."
+def unknown_command():
+    return f"Unknown command: Type 'help' for available commands."
 
 @input_error
 def save_to_disk():
@@ -190,13 +201,24 @@ def search_contacts():
     results = address_book.search_contacts(query)
 
     if results:
-        print(f"Search results for '{query}':")
-        for result in results:
-            phones_info = ', '.join(phone.value for phone in result.phones)
-            birthday_info = result.birthday if result.birthday else "None"
-            print(f"Contact name: {result.name.value}\n  Phones: {phones_info}\n  Birthday: {birthday_info}")
+        result = f"Search results for '{query}':\n"
+        for record in results:
+            result += f"{record.name.value}:\n"
+            phones_info = ', '.join(phone.value for phone in record.phones)
+            if phones_info:
+                result += f"  Phone numbers: {phones_info}\n"
+            if record.birthday:
+                result += f"  Birthday: {record.birthday}\n"
+            email_info = ', '.join(email.value for email in record.emails)
+            if email_info:
+                result += f"  Email: {email_info}\n"
+            address_info = ', '.join(address.value for address in record.addresses)
+            if address_info:
+                result += f"  Address: {address_info}\n"
+        return result
     else:
         return(f"No results found for '{query}'.")
+
 
 @input_error
 def when_birthday(command):
@@ -241,7 +263,7 @@ def remove_phone_from_contact(command):
 
 def sort_folder(args=None):
     if args is None:
-        print("Please specify the source folder.")
+        return("Please specify the source folder.")
     else:
         sort.main(args)
 
@@ -302,29 +324,36 @@ def add_address(command):
 
 
 commands = {
-    "add contact": add_contact_interactive,
-    "add email": add_email,   
-    "help": help,
     "hello": hello,
-    "change phone": change_contact,
-    "delete": delete_contact,
+    "help": help,
+    "add contact": add_contact_interactive,
+    #"add phone": ,
+    "add email": add_email,
+    "add adres": add_address,
+    "change phone": change_phone,
+    "change birthday": update_birthday,
+    #"change name": ,
+    #"change email": ,
+    #"change adres": ,
     "remove phone": remove_phone_from_contact,
+    #"remove phone": ,
+    #"remove email": ,
+    #"remove adres": ,
     "clear all": address_book.clear_all_contacts,
+    "by birthday": search_contact_by_birthday,
+    "day to birthday": when_birthday,
+    "delete": delete_contact,
+    "search": search_contacts,
+    "finde phone": get_phone,
+    "show all": show_all_contacts,
     "good bye": exit_bot,
     "close": exit_bot,
     "exit": exit_bot,
     ".": exit_bot,
-    "by birthday": search_contact_by_birthday,
-    "day to birthday": when_birthday,
-    "add birthday": update_birthday,
-    "search": search_contacts,
-    "finde phone": get_phone,
-    "add adres": add_address,
 
     "sort": sort_folder, 
     "save": save_to_disk,
     "load": load_from_disk,
-    "show all": show_all_contacts,
 }
 
 def choice_action(data, commands):
