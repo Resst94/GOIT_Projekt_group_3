@@ -85,6 +85,20 @@ class Address(Field):
         pass
 
 
+class Title(Field):
+    """class for validating the title of the note"""
+
+    def _validate(self, value):
+        # Title starts with a letter, can contain numbers
+        pattern = re.compile(r'^[a-zA-Zа-яА-Я][a-zA-Z0-9а-яА-Я\s]*$')
+
+        if not value or not pattern.match(value):
+            raise ValueError(
+                "Invalid title format. Title must start with a letter, can contain numbers and cannot be empty.")
+
+        return f"'{value}' is a valid title for the note"
+
+
 class Note:
     '''class represents a single note with text'''
 
