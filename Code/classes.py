@@ -135,25 +135,27 @@ class Note:
         return f"\nAuthor: {self.author}\nTitle: {self.title}\nNote: {self.body}"
 
 
-class Notebook:
-    '''class manages a list of notes'''
-
-    def __init__(self):
-        self.notes = {}
+class Notebook(UserDict):
+    """class for managing a collection of notes"""
 
     def add_note(self, note):
-        self.notes[note.title] = note
+        self.data[note.title.value] = note
+
+    def find_notes(self, query):
+        return [note for note in self.data.values() if query in note.title.value or query in note.body or query in note.author.value]
 
     def delete_note(self, title):
-        if title in self.notes:
-            del self.notes[title]
+        if title in self.data:
+            del self.data[title]
+            return True
+        return False
 
-    def find_note(self, search_query):
-        return [note for note in self.notes.values() if search_query.lower() in note.title.lower() or search_query.lower() in note.author.value.lower()]
+    def get_note(self, title):
+        return self.data.get(title, None)
 
-    def edit_note(self, title, new_body):
-        if title in self.notes:
-            self.notes[title].body = new_body
+    def show_all_notes(self):
+        for note in self.data.values():
+            print(f"\nTitle: {note.title.value}\nAuthor: {note.author.value}\nCreated at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
 
 
 class Record:
