@@ -11,7 +11,7 @@ sql_completer = WordCompleter([
     'add', 'birthday', 'change phone', 'search', 'when', 'finde',
     'show all', 'remove', 'delete', 'save', 'load', 'exit', 
     'close', 'good bye', 'clear all'], ignore_case=True)
-address_book = AddressBook()
+
 
 def input_error(func):
     def wrapper(*args, **kwargs):
@@ -151,7 +151,6 @@ def show_all_contacts():
         return "Contact list is empty"
 
 def exit_bot():
-    save_to_disk()
     return "Good bye!"
 
 @input_error
@@ -159,14 +158,12 @@ def unknown_command(command):
     return f"Unknown command: {command}. Type 'help' for available commands."
 
 @input_error
-def save_to_disk():
-    filename = input("Enter the filename to save the address book: ").strip()
+def save_to_disk(filename):
     address_book.save_to_disk(filename)
     return f"Address book saved to {filename}"
 
 @input_error
-def load_from_disk():
-    filename = input("Enter the filename to load/create the address book: : ").strip()
+def load_from_disk(filename):
     address_book.load_from_disk(filename)
     return f"Address book loaded from {filename}"
 
@@ -275,8 +272,11 @@ def choice_action(data, commands):
     return unknown_command, None
 
 def main():
+    filename = input("Enter the filename to load/create the address book: : ").strip()
+    load_from_disk(filename)
     session = PromptSession(
         lexer=PygmentsLexer(SqlLexer), completer=sql_completer)
+
     while True:
         try:
             data = session.prompt("\nEnter command: ").lower().strip()
@@ -288,8 +288,8 @@ def main():
         except EOFError:
             break
         if result == "Good bye!":
+            save_to_disk(filename)
             break
-        
+     
 if __name__ == "__main__":
-    load_from_disk()
     main()
