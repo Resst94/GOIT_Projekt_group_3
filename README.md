@@ -41,7 +41,7 @@ Sort files in a specified folder by category (images, documents, videos, etc.)\
 :heavy_check_mark: Smart Analysis and Suggestions:\
 The bot analyzes user input to understand their intent\
 Offers suggestions for the closest commands based on the context of the entered text\
-\
+
 ## :checkered_flag: Starting
 
 ```bash
