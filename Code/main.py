@@ -1,6 +1,9 @@
 from classes import *
 import sort
+
 address_book = AddressBook()
+notebook = Notebook()
+
 
 def input_error(func):
     def wrapper(*args, **kwargs):
@@ -16,8 +19,10 @@ def input_error(func):
             return f"Error: {str(e)}"
     return wrapper
 
+
 def hello():
     return "Welcome to Your Address Book!\nType 'help' to see available commands and instructions."
+
 
 def help():
     return """Please enter the command in accordance with the described capabilities (left column), for the specified type (right column).\n
@@ -34,8 +39,14 @@ def help():
         'delete <name_contact>'                                 - Delete an entire contact.
         'save'                                                  - Save the address book to a file.
         'load'                                                  - Load the address book from a file.
-        'exit' or 'close' or 'good bye'                         - Exit the program.
-        'clear all'                                             - Clear all contacts."""
+        'clear all'                                             - Clear all contacts.
+        'create note'                                           - Create a new note in the Notebook.
+        'change title <old_title> <new_title>'                  - Change the title of an existing note.
+        'edit note <note_title>'                                - Edit the content of an existing note.
+        'delete note <note_title>'                              - Delete an existing note.
+        'find notes <query>'                                    - Find notes containing the specified query in the title or body or by author.
+        'show all notes'                                        - Display all notes.
+        'exit' or 'close' or 'good bye'                         - Exit the program."""
 
 
 @input_error
@@ -321,7 +332,82 @@ def add_address(command):
     else:
         raise ValueError("Invalid command format. Please enter name and email.")
 
+@input_error
+def create_note():
+    author = input("Enter the author's name: ").strip()
+    title = input("Enter the note's title: ").strip()
+    body = input("Enter the note's body: ").strip()    
+    note = Note(author, title, body)
+    notebook.add_note(note)    
+    return f"Note '{title}' by {author} has been added."
 
+@input_error
+def find_note(command):
+    query = command.strip()
+    if not query:
+        return "Please provide a search query."
+    results = notebook.find_notes(query)
+    if not results:
+        return "No notes found with the given query."
+    result = "Found notes:\n"
+    for note in results:
+        result += f"Author: {note.author.value}\nTitle: {note.title.value}\nNote: {note.body}\n"
+    return result
+
+@input_error
+def change_note_title(command):
+    parts = command.split(" ")
+    if len(parts) == 2:
+        old_title, new_title = parts[0], parts[1]
+        note = notebook.get_note(old_title)
+        if note:
+            notebook.delete_note(old_title)
+            note.title.value = new_title
+            notebook.add_note(note)
+            return f"Note title changed from '{old_title}' to '{new_title}'."
+        else:
+            raise KeyError(f"Note '{old_title}' not found")
+    else:
+        raise ValueError("Invalid command format. Please enter old and new titles for the note.")
+
+@input_error
+def edit_note_text(command):
+    title = command.strip()
+    note = notebook.get_note(title)
+    if note:
+        print(f"Current note text:\n{note.body}")
+        new_body = input("Enter the new note text (or press Enter to keep the current text): ").strip()
+        if new_body:
+            note.edit_note(new_body)
+            return f"Note '{title}' updated."
+        else:
+            return "Note text not changed."
+    else:
+        raise KeyError(f"Note '{title}' not found")
+
+@input_error
+def remove_note(command):
+    title = command.strip()
+    note = notebook.get_note(title)
+    if note:
+        notebook.delete_note(title)
+        return f"Note '{title}' deleted."
+    else:
+        raise KeyError(f"Note '{title}' not found")
+    
+@input_error
+def show_all_notes():
+    notes = notebook.data.values()
+    if notes:
+        result = "All notes:\n"
+        for note in notes:
+            result += f"Title: {note.title.value}\n"
+            result += f"Author: {note.author.value}\n"
+            result += f"Created at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            result += f"Note: {note.body}\n\n"
+        return result
+    else:
+        return "No notes found in the address book"
 
 commands = {
     "hello": hello,
@@ -342,10 +428,10 @@ commands = {
     "clear all": address_book.clear_all_contacts,
     "by birthday": search_contact_by_birthday,
     "day to birthday": when_birthday,
-    "delete": delete_contact,
+    "delete contact": delete_contact,
     "search": search_contacts,
     "finde phone": get_phone,
-    "show all": show_all_contacts,
+    "show all contacts": show_all_contacts,
     "good bye": exit_bot,
     "close": exit_bot,
     "exit": exit_bot,
@@ -354,6 +440,13 @@ commands = {
     "sort": sort_folder, 
     "save": save_to_disk,
     "load": load_from_disk,
+
+    "create note": create_note,
+    "change title": change_note_title,
+    "edit note": edit_note_text,
+    "delete note": remove_note,
+    "find note": find_note,
+    "show all notes": show_all_notes
 }
 
 def choice_action(data, commands):
