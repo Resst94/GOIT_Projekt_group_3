@@ -85,48 +85,77 @@ class Address(Field):
         pass
 
 
+class Title(Field):
+    """class for validating the title of the note"""
+
+    def _validate(self, value):
+        # Title starts with a letter, can contain numbers
+        pattern = re.compile(r'^[a-zA-Zа-яА-Я][a-zA-Z0-9а-яА-Я\s]*$')
+
+        if not value or not pattern.match(value):
+            raise ValueError(
+                "Invalid title format. Title must start with a letter, can contain numbers and cannot be empty.")
+
+        return f"'{value}' is a valid title for the note"
+
+
 class Note:
-    '''class represents a single note with text'''
+    """class represents a single note with text"""
 
     def __init__(self, author, title, body):
         self.author = Name(author)
-        self.title = title
+        self.title = Title(title)
         self.body = body
+        self.created_at = datetime.now()  # Time of note creation
 
-    def save_note(self):
+    def edit_note(self, new_body):
+        self.body = new_body
+
+    def edit_note_title(self, new_title):
+        self.title.value = new_title
+
+    def edit_note_author(self, new_author):
+        self.author.value = new_author
+
+    def to_dict(self):
+        # Convert the Note instance into a dictionary
         return {
             'author': self.author.value,
-            'title': self.title,
+            'title': self.title.value,
             'body': self.body
         }
 
     @classmethod
-    def notes_dict(cls, notes):
-        return cls(notes['author'], notes['title'], notes['body'])
+    def from_dict(cls, notes):
+        # Create a new Note instance from a dictionary
+        record = cls(notes['author'], notes['title'], notes['body'])
+        return record
 
     def __str__(self):
-        return f"\nAuthor: {self.author}\nTitle: {self.title}\nNote: {self.body}"
+        return f"\nAuthor: {self.author}\nTitle: {self.title}\nCreated at: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}\nNote: {self.body}\n"
 
 
-class Notebook:
-    '''class manages a list of notes'''
-
-    def __init__(self):
-        self.notes = {}
+class Notebook(UserDict):
+    """class for managing a collection of notes"""
 
     def add_note(self, note):
-        self.notes[note.title] = note
+        self.data[note.title.value] = note
+
+    def find_notes(self, query):
+        return [note for note in self.data.values() if query in note.title.value or query in note.body or query in note.author.value]
 
     def delete_note(self, title):
-        if title in self.notes:
-            del self.notes[title]
+        if title in self.data:
+            del self.data[title]
+            return True
+        return False
 
-    def find_note(self, search_query):
-        return [note for note in self.notes.values() if search_query.lower() in note.title.lower() or search_query.lower() in note.author.value.lower()]
+    def get_note(self, title):
+        return self.data.get(title, None)
 
-    def edit_note(self, title, new_body):
-        if title in self.notes:
-            self.notes[title].body = new_body
+    # def show_all_notes(self):
+    #     for note in self.data.values():
+    #         print(f"\nTitle: {note.title.value}\nAuthor: {note.author.value}\nCreated at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
 
 
 class Record:
