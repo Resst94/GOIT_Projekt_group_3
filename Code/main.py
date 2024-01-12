@@ -275,30 +275,30 @@ def add_email(command):
 
 @input_error
 def add_address(command):
-    parts = command.split(" ", 2)  # Split the command into at most 3 parts
-    if len(parts) == 3:
-        action, name, address = parts
-        if action.lower() == 'address' and name and address:
-            record = address_book.find(name)
-            if record:
-                address_field = Address(address)
-                record.add_address(address_field.value)
-                return f"Address {address} added to contact {name}."
+    parts = command.split(" ")
+    if len(parts) == 2:
+        name, address = parts[0], parts[1]
+        record = address_book.find(name)
+        if record:
+            address_field = Address(address)
+            record.add_address(address_field.value)
+            return f"Address {address} added to contact {name}."
+        else:
+            raise KeyError(f"Contact {name} not found")
+    else:
+        raise ValueError("Invalid command format. Please enter name and email.")
 
 
 commands = {
-    "add": add_contact_interactive,
-    "email add": add_email,
-    "adres add": add_address,
+    "add contact": add_contact_interactive,
+    "add email": add_email,
     "sort": sort_folder,    
     "help": help,
     "hello": hello,
     "change phone": change_contact,
     "delete": delete_contact,
-    "save": save_to_disk,
     "load": load_from_disk,
     "remove phone": remove_phone_from_contact,
-    "show all": show_all_contacts,
     "clear all": address_book.clear_all_contacts,
     "good bye": exit_bot,
     "close": exit_bot,
@@ -306,9 +306,11 @@ commands = {
     ".": exit_bot,
 
 
+    "show all": show_all_contacts, ##  ????????? ##
+    "save": save_to_disk, ##  ????????? ##
 
 
-
+    "add adres": add_address,
     "finde phone": get_phone,
     "when birthday": when_birthday,
     "birthday add": update_birthday,
