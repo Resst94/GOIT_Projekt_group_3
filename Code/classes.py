@@ -132,7 +132,7 @@ class Note:
         return record
 
     def __str__(self):
-        return f"\nAuthor: {self.author}\nTitle: {self.title}\nNote: {self.body}"
+        return f"\nAuthor: {self.author}\nTitle: {self.title}\nCreated at: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}\nNote: {self.body}\n"
 
 
 class Notebook(UserDict):
@@ -153,9 +153,9 @@ class Notebook(UserDict):
     def get_note(self, title):
         return self.data.get(title, None)
 
-    def show_all_notes(self):
-        for note in self.data.values():
-            print(f"\nTitle: {note.title.value}\nAuthor: {note.author.value}\nCreated at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+    # def show_all_notes(self):
+    #     for note in self.data.values():
+    #         print(f"\nTitle: {note.title.value}\nAuthor: {note.author.value}\nCreated at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
 
 
 class Record:
