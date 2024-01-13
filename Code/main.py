@@ -46,6 +46,7 @@ def help():
         'delete note <note_title>'                              - Delete an existing note.
         'find notes <query>'                                    - Find notes containing the specified query in the title or body or by author.
         'show all notes'                                        - Display all notes.
+        'add tags'                                              - Adds tags to an existing note.
         'exit' or 'close' or 'good bye'                         - Exit the program."""
 
 
