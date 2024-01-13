@@ -3,6 +3,7 @@ from collections import UserDict
 import re
 import pickle
 
+
 class Field:
     
     def __init__(self, value):
@@ -24,6 +25,7 @@ class Field:
     def __str__(self):
         return str(self.__value)
 
+
 class Name(Field):
     """class for validate name field"""
 
@@ -35,14 +37,16 @@ class Name(Field):
         
         return f'{value} is a valid name'
         
+
 class Phone(Field):
     """class for validate phone field"""
 
     def _validate(self, value):
-        if len(value) != 10 or not value.isdigit():
-            raise ValueError("Phone number must be 10 digits")
-        
+        pattern = re.compile(r"^((\+?3)?8)?0\d{9}$")
+        if not pattern.match(value):
+            raise ValueError("Phone number is not valid")
         return f'{value} is valid phone number'
+
 
 class Birthday(Field):
     """class for validating birthday field"""
@@ -68,15 +72,111 @@ class Birthday(Field):
             raise ValueError('Invalid date: {value}. The date is not correct.')
 
 
+class Email(Field):
+    def _validate(self, value):
+        pattern = r'^((([0-9A-Za-z]{1}[-0-9A-z\.]{1,}[0-9A-Za-z]{1})|([0-9А-Яа-я]{1}[-0-9А-я\.]{1,}[0-9А-Яа-я]{1}))@([-A-Za-z]{1,}\.){1,2}[-A-Za-z]{2,})$'
+        if not re.match(pattern, value):
+            raise ValueError("Invalid email address")
+
+
+class Address(Field):
+    def _validate(self, value):
+        # No special validation for address
+        pass
+
+
+class Title(Field):
+    """class for validating the title of the note"""
+
+    def _validate(self, value):
+        # Title starts with a letter, can contain numbers
+        pattern = re.compile(r'^[a-zA-Zа-яА-Я][a-zA-Z0-9а-яА-Я\s]*$')
+
+        if not value or not pattern.match(value):
+            raise ValueError(
+                "Invalid title format. Title must start with a letter, can contain numbers and cannot be empty.")
+
+        return f"'{value}' is a valid title for the note"
+
+
+class Note:
+    """class represents a single note with text"""
+
+    def __init__(self, author, title, body):
+        self.author = Name(author)
+        self.title = Title(title)
+        self.body = body
+        self.created_at = datetime.now()  # Time of note creation
+
+    def edit_note(self, new_body):
+        self.body = new_body
+
+    def edit_note_title(self, new_title):
+        self.title.value = new_title
+
+    def edit_note_author(self, new_author):
+        self.author.value = new_author
+
+    def to_dict(self):
+        # Convert the Note instance into a dictionary
+        return {
+            'author': self.author.value,
+            'title': self.title.value,
+            'body': self.body
+        }
+
+    @classmethod
+    def from_dict(cls, notes):
+        # Create a new Note instance from a dictionary
+        record = cls(notes['author'], notes['title'], notes['body'])
+        return record
+
+    def __str__(self):
+        return f"\nAuthor: {self.author}\nTitle: {self.title}\nCreated at: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}\nNote: {self.body}\n"
+
+
+class Notebook(UserDict):
+    """class for managing a collection of notes"""
+
+    def add_note(self, note):
+        self.data[note.title.value] = note
+
+    def find_notes(self, query):
+        return [note for note in self.data.values() if query in note.title.value or query in note.body or query in note.author.value]
+
+    def delete_note(self, title):
+        if title in self.data:
+            del self.data[title]
+            return True
+        return False
+
+    def get_note(self, title):
+        return self.data.get(title, None)
+
+    # def show_all_notes(self):
+    #     for note in self.data.values():
+    #         print(f"\nTitle: {note.title.value}\nAuthor: {note.author.value}\nCreated at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+
+
 class Record:
     def __init__(self, name, birthday=None):
         self.name = Name(name)
         self.phones = []
+        self.emails = []  
+        self.addresses = []  
         self.birthday = Birthday(birthday) if birthday else None
 
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
         return f'Number phone {phone} has been add'
+    
+    def add_email(self, email):  
+        self.emails.append(Email(email))
+        return f'Email {email} has been add'
+
+    def add_address(self, address):  
+        self.addresses.append(Address(address))
+        return f'Address {address} has been add'
     
     def update_birthday(self, new_birthday):
         if self.birthday is not None:
@@ -111,6 +211,7 @@ class Record:
 
         if self.birthday is not None and self.birthday.value is not None:
             birth_day = self.birthday.value
+            birth_day = [birth_day.replace(i, '-') for i in './- ' if i in birth_day][0]
             birth_day = datetime.strptime(birth_day, "%d-%m-%Y")
 
             next_birthday = datetime(today.year, birth_day.month, birth_day.day)
@@ -128,6 +229,8 @@ class Record:
         return {
             'name': self.name.value,
             'phones': [phone.value for phone in self.phones],
+            'emails': [email.value for email in self.emails],  # Add this line
+            'addresses': [address.value for address in self.addresses],  # Add this line
             'birthday': self.birthday.value if (self.birthday and hasattr(self.birthday, 'value')) else None
         }
 
@@ -136,10 +239,15 @@ class Record:
         record = cls(name=data['name'], birthday=data['birthday'])
         for phone in data['phones']:
             record.add_phone(phone)
+        for email in data['emails']:  # Add this loop
+            record.add_email(email)
+        for address in data['addresses']:  # Add this loop
+            record.add_address(address)
         return record
-            
+
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, emails: {'; '.join(e.value for e in self.emails)}, addresses: {'; '.join(a.value for a in self.addresses)}"
+
 
 class AddressBook(UserDict):
 
@@ -166,9 +274,10 @@ class AddressBook(UserDict):
         yes_no = input('Are you sure you want to delete all users? (y/n) ').lower().strip()
         if yes_no == 'y':
             self.data.clear()
-            print("All contacts cleared.")
+            return "All contacts cleared."
         else:
-             print('Removal canceled')
+            return 'Removal canceled'
+
 
     def delete(self, name):
         if name in self.data:
@@ -221,4 +330,13 @@ class AddressBook(UserDict):
                 results.append(record)
 
         return results
+
+    def search_by_birthday(self, number_of_days):
+        self._contact = []
+        for i in self.data.values():
+            self._birth_date = i.days_to_birthday()
+            if int(number_of_days) > self._birth_date:
+                self._contact.append(i)
+
+        return self._contact
     
