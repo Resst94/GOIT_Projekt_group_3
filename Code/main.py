@@ -161,12 +161,12 @@ def unknown_command():
     return f"Unknown command: Type 'help' for available commands."
 
 @input_error
-def save_to_disk():
+def save_to_disk(filename):
     address_book.save_to_disk(filename)
     return f"Address book saved to {filename}"
 
 @input_error
-def load_from_disk():
+def load_from_disk(filename):
     address_book.load_from_disk(filename)
     return f"Address book loaded from {filename}"
 
