@@ -337,7 +337,8 @@ def create_note():
     author = input("Enter the author's name: ").strip()
     title = input("Enter the note's title: ").strip()
     body = input("Enter the note's body: ").strip()    
-    note = Note(author, title, body)
+    tags = tag_conversion(input("Enter the note's tags: ").strip())
+    note = Note(author, title, body, tags)
     notebook.add_note(note)    
     return f"Note '{title}' by {author} has been added."
 
@@ -404,10 +405,51 @@ def show_all_notes():
             result += f"Title: {note.title.value}\n"
             result += f"Author: {note.author.value}\n"
             result += f"Created at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
-            result += f"Note: {note.body}\n\n"
+            result += f"Note: {note.body}\n"
+            result += f"Tags: {note.tags}\n\n"
         return result
     else:
         return "No notes found in the address book"
+
+@input_error
+def add_tag():
+    title = input("Enter the title where you want to add tags: ").strip()
+
+    if title not in notebook.data.keys():
+        raise ValueError(f"Note '{title}' not found")
+
+    data_tags = notebook.data[title].tags
+
+    tags = tag_conversion(input("Enter a tags: ").strip())
+    tag_list = tags.split(', ')
+
+    unique_tags = ''
+
+    for tag in tag_list:
+
+        if tag not in data_tags:    
+            unique_tags += f'{tag}' if tag == tag_list[-1] else f'{tag}, '
+
+    if len(tag) != 0:
+        notebook.add_tags(title, unique_tags)
+
+    return 'tags added'
+
+
+def tag_conversion(tags):
+        if len(tags) == 0:
+            return ''
+        tags = re.findall(r'#?\w*\w', tags)
+
+        str_tag = ''
+        for tag in tags:
+            if tag == tags[-1]:
+                str_tag += f'{tag}' if tag[0] == '#' else f'#{tag}'
+
+            else:
+                str_tag += f'{tag}, ' if tag[0] == '#' else f'#{tag}, '
+
+        return str_tag
 
 commands = {
     "hello": hello,
@@ -443,6 +485,7 @@ commands = {
 
     "create note": create_note,
     "change title": change_note_title,
+    'add tags': add_tag,
     "edit note": edit_note_text,
     "delete note": remove_note,
     "find note": find_note,
