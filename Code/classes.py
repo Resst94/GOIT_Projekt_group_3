@@ -209,6 +209,42 @@ class Record:
                 return f'Number phone {phone_old} has been changed to {tel_new.value}'
         raise ValueError("Phone number not found for changing")
 
+    def remove_email(self, email):
+        tel = Email(email)
+        if tel.value in [item.value for item in self.emails]:
+            self.emails = [item for item in self.emails if tel.value != item.value]
+            return f'Number email {email} has been removed from contact {self.name.value}.'
+        else:
+            return f'email number {email} not found in contact {self.name.value}.'
+
+    def edit_email(self, email_old, email_new):
+        tel_new = Email(email_new)
+        for item in self.emails:
+            if email_old == item.value:
+                idx = self.emails.index(item)
+                self.emails.remove(item)
+                self.emails.insert(idx, tel_new)
+                return f'Number email {email_old} has been changed to {tel_new.value}'
+        raise ValueError("Email number not found for changing")
+            
+    def remove_address(self, address):
+        tel = Address(address)
+        if tel.value in [item.value for item in self.addresses]:
+            self.addresses = [item for item in self.addresses if tel.value != item.value]
+            return f'Number address {address} has been removed from contact {self.name.value}.'
+        else:
+            return f'address number {address} not found in contact {self.name.value}.'
+
+    def edit_address(self, address_old, address_new):
+        tel_new = Address(address_new)
+        for item in self.addresses:
+            if address_old == item.value:
+                idx = self.addresses.index(item)
+                self.addresses.remove(item)
+                self.addresses.insert(idx, tel_new)
+                return f'Number address {address_old} has been changed to {tel_new.value}'
+        raise ValueError("Address number not found for changing")
+
     def find_phone(self, phone):
         tel = Phone(phone)
         return next((item for item in self.phones if tel.value == item.value), None)

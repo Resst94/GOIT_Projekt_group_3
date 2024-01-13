@@ -130,40 +130,6 @@ def get_phone(command):
     else:
         raise ValueError
 
-@input_error 
-def display_contacts_pagination(records, items_per_page=3):
-    total_pages = (len(records) + items_per_page - 1) // items_per_page
-
-    page = 1
-    while True:
-        start_index = (page - 1) * items_per_page
-        end_index = start_index + items_per_page
-        current_records = records[start_index:end_index]
-
-        if not current_records:
-            print("Contact list is empty")
-            break
-
-        result = f"Page {page}/{total_pages}:\n"
-        for record in current_records:
-            phones_info = ', '.join(phone.value for phone in record.phones)
-            result += f"{record.name.value}:\n  Phone numbers: {phones_info}\n  Birthday: {record.birthday}\n"
-
-        print(result)
-
-        user_input = input("Type 'next' to view the next page, 'prev' for the previous page, or 'exit' to quit: ").strip().lower()
-
-        if user_input == 'next' and page < total_pages:
-            page += 1
-        elif user_input == 'prev' and page > 1:
-            page -= 1
-        elif user_input == 'exit':
-            break
-        else:
-            print("Invalid command. Please enter 'next', 'prev', or 'exit'.")
-
-    return "Showing contacts completed."
-
 @input_error
 def show_all_contacts():
     records = address_book.data.values()
@@ -274,10 +240,15 @@ def remove_phone_from_contact(command):
         raise ValueError
 
 def sort_folder(args=None):
-    if args is None:
-        return("Please specify the source folder.")
-    else:
-        sort.main(args)
+    try:
+        if args is None:
+            raise ValueError("Please specify the source folder.")
+        else:
+            sort.main(args)
+            return("The folder is sorted \N{winking face}")
+    except Exception as e:
+        print(f"Error: {e}")
+        return("\nPlease usage: sort <source_folder>")
 
 @input_error
 def delete_contact(command):
@@ -332,6 +303,58 @@ def add_address(command):
             raise KeyError(f"Contact {name} not found")
     else:
         raise ValueError("Invalid command format. Please enter name and email.")
+
+@input_error
+def remove_email_from_contact():
+    name = input("Please enter the contact's name: ").strip()
+    email = input("Please enter the email to remove: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        result = record.remove_email(email)
+        return result
+    else:
+        raise KeyError(f"Contact {name} not found")
+
+@input_error
+def change_email():
+    name = input("Please enter the contact's name: ").strip()
+    old_email = input("Please enter the old email: ").strip()
+    new_email = input("Please enter the new email: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        new_email_field = Email(new_email)
+        result = record.edit_email(old_email, new_email_field.value)
+        return result
+    else:
+        raise KeyError(f"Contact {name} not found")
+
+@input_error
+def remove_address_from_contact():
+    name = input("Please enter the contact's name: ").strip()
+    address = input("Please enter the address to remove: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        result = record.remove_address(address)
+        return result
+    else:
+        raise KeyError(f"Contact {name} not found")
+
+@input_error
+def change_address():
+    name = input("Please enter the contact's name: ").strip()
+    old_address = input("Please enter the old address: ").strip()
+    new_address = input("Please enter the new address: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        new_address_field = Address(new_address)
+        result = record.edit_address(old_address, new_address_field.value)
+        return result
+    else:
+        raise KeyError
 
 @input_error
 def create_note():
@@ -462,12 +485,11 @@ commands = {
     "change phone": change_phone,
     "change birthday": update_birthday,
     #"change name": ,
-    #"change email": ,
-    #"change adres": ,
+    "change email": change_email,
+    "change address": change_address,
     "remove phone": remove_phone_from_contact,
-    #"remove phone": ,
-    #"remove email": ,
-    #"remove adres": ,
+    "remove email": remove_email_from_contact,
+    "remove address": remove_address_from_contact,
     "clear all": address_book.clear_all_contacts,
     "by birthday": search_contact_by_birthday,
     "day to birthday": when_birthday,
@@ -512,3 +534,4 @@ def main():
 if __name__ == "__main__":
     load_from_disk()
     main()
+    

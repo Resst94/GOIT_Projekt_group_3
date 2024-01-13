@@ -2,15 +2,11 @@ import os
 import shutil
 import zipfile
 import re
-import sys
 
 # Transliterates the Cyrillic alphabet into Latin
-
 UKRAINIAN_SYMBOLS = 'абвгдеєжзиіїйклмнопрстуфхцчшщьюя'
-TRANSLATION = (
-    "a", "b", "v", "g", "d", "e", "je", "zh", "z", "y", "i", "ji", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t",
-    "u",
-    "f", "h", "ts", "ch", "sh", "sch", "", "ju", "ja")
+TRANSLATION = ("a", "b", "v", "g", "d", "e", "je", "zh", "z", "y", "i", "ji", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u",
+               "f", "h", "ts", "ch", "sh", "sch", "", "ju", "ja")
 
 TRANS = {}
 
@@ -41,55 +37,66 @@ def create_directory(directory_path):
     os.makedirs(directory_path, exist_ok=True)
 
 
-def process_image(item, item_path, normalized_item):
-    create_directory('images')
+def process_image(item, item_path, normalized_item, source_folder):
+    images_folder = os.path.join(source_folder, 'images')
+    create_directory(images_folder)
     images_files.append(item)
     known_extensions.add('image')
-    shutil.move(item_path, os.path.join('images', normalized_item))
+    dest_path = os.path.join(images_folder, normalized_item)
+    shutil.move(item_path, dest_path)
 
 
-def process_video(item, item_path, normalized_item):
-    create_directory('video')
+def process_video(item, item_path, normalized_item, source_folder):
+    video_folder = os.path.join(source_folder, 'video')
+    create_directory(video_folder)
     video_files.append(item)
     known_extensions.add('video')
-    shutil.move(item_path, os.path.join('video', normalized_item))
+    dest_path = os.path.join(video_folder, normalized_item)
+    shutil.move(item_path, dest_path)
 
 
-def process_document(item, item_path, normalized_item):
-    create_directory('documents')
+def process_document(item, item_path, normalized_item, source_folder):
+    documents_folder = os.path.join(source_folder, 'documents')
+    create_directory(documents_folder)
     doc_files.append(item)
     known_extensions.add('document')
-    shutil.move(item_path, os.path.join('documents', normalized_item))
+    dest_path = os.path.join(documents_folder, normalized_item)
+    shutil.move(item_path, dest_path)
 
 
-def process_audio(item, item_path, normalized_item):
-    create_directory('audio')
+def process_audio(item, item_path, normalized_item, source_folder):
+    audio_folder = os.path.join(source_folder, 'audio')
+    create_directory(audio_folder)
     audio_files.append(item)
     known_extensions.add('audio')
-    shutil.move(item_path, os.path.join('audio', normalized_item))
+    dest_path = os.path.join(audio_folder, normalized_item)
+    shutil.move(item_path, dest_path)
 
 
-def process_archive(item, item_path, normalized_item):
-    create_directory('archives')
+def process_archive(item, item_path, normalized_item, source_folder):
+    archives_folder = os.path.join(source_folder, 'archives')
+    create_directory(archives_folder)
     archives.append(item)
     known_extensions.add('archive')
-    archive_folder = os.path.join('archives', normalized_item.rsplit('.', 1)[0])
+    dest_path = os.path.join(archives_folder, normalized_item.rsplit('.', 1)[0])
     if zipfile.is_zipfile(item_path):
         with zipfile.ZipFile(item_path, 'r') as zip_ref:
-            zip_ref.extractall(archive_folder)
+            zip_ref.extractall(dest_path)
     else:
         print(f"Skipping {item}: Not a valid zip file")
     os.remove(item_path)
 
 
-def process_other(item, item_path, normalized_item):
-    create_directory('others')
+def process_other(item, item_path, normalized_item, source_folder):
+    others_folder = os.path.join(source_folder, 'others')
+    create_directory(others_folder)
     unknown_extensions.add('other')
     others.append(item)
-    shutil.move(item_path, os.path.join('others', normalized_item))
+    dest_path = os.path.join(others_folder, normalized_item)
+    shutil.move(item_path, dest_path)
 
 
-def process_folder(folder):
+def process_folder(folder, source_folder):
     for item in os.listdir(folder):
         item_path = os.path.join(folder, item)
         normalized_item = normalize(item)
@@ -122,12 +129,12 @@ def process_folder(folder):
             }
 
             processor = processors.get(extension, process_other)
-            processor(item, item_path, normalized_item)
+            processor(item, item_path, normalized_item, source_folder)
 
         elif os.path.isdir(item_path):
             # Recursively process nested folders
             if item not in ('images', 'video', 'documents', 'audio', 'archives', 'others'):
-                process_folder(item_path)
+                process_folder(item_path, source_folder)
                 folders.append(item)
             else:
                 shutil.rmtree(item_path)
@@ -146,7 +153,7 @@ def remove_empty_folders(path):
 
 def main(source_folder):
 
-    process_folder(source_folder)
+    process_folder(source_folder, source_folder)
     remove_empty_folders(source_folder)
 
     print(f"\nImages: {images_files}\n")
@@ -157,11 +164,6 @@ def main(source_folder):
     print(f"Unknown Extensions: {unknown_extensions}\n")
     print(f"Others: {others}\n")
     print(f"Known Extensions: {known_extensions}\n")
-
-    print(" Files are sorted \N{thumbs up sign}")
-    print(" You can delete the folder \N{winking face}")
-    print(" Thank you for using our sorter \N{saluting face}")
-    print(" Have a nice day \N{smiling face with smiling eyes}")
 
 
 if __name__ == "__main__":
