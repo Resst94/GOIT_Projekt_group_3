@@ -346,6 +346,8 @@ class AddressBook(UserDict):
             print(f"Error saving data to '{filename}': {str(e)}")
 
     def load_from_disk(self, filename):
+        while not filename.strip():
+            filename = input("Enter a valid filename: ").strip()
         try:
             with open(filename, 'rb+') as file:
                 print(f"\nReading data from {filename}")
