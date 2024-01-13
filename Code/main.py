@@ -154,7 +154,6 @@ def show_all_contacts():
 
 
 def exit_bot():
-    save_to_disk()
     return "Good bye!"
 
 @input_error
@@ -163,13 +162,11 @@ def unknown_command():
 
 @input_error
 def save_to_disk():
-    filename = input("Enter the filename to save the address book: ").strip()
     address_book.save_to_disk(filename)
     return f"Address book saved to {filename}"
 
 @input_error
 def load_from_disk():
-    filename = input("Enter the filename to load/create the address book: : ").strip()
     address_book.load_from_disk(filename)
     return f"Address book loaded from {filename}"
 
@@ -523,15 +520,17 @@ def choice_action(data, commands):
     return unknown_command, None
 
 def main():
+    filename = input("Enter the filename to load/create the address book: : ").strip()
+    load_from_disk(filename)
     while True:
         data = input("\nEnter command: ").lower().strip()
         func, args = choice_action(data, commands)
         result = func(args) if args else func()
         print(result)
         if result == "Good bye!":
+            save_to_disk(filename)
             break
 
 if __name__ == "__main__":
-    load_from_disk()
     main()
     
