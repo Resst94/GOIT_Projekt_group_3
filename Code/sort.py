@@ -165,10 +165,6 @@ def main(source_folder):
     print(f"Others: {others}\n")
     print(f"Known Extensions: {known_extensions}\n")
 
-    print(" The folder is sorted \N{winking face}")
-    print(" Thank you for using our sorter \N{saluting face}")
-    print(" Have a nice day \N{smiling face with smiling eyes}")
-
 
 if __name__ == "__main__":
     main()

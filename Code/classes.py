@@ -102,10 +102,11 @@ class Title(Field):
 class Note:
     """class represents a single note with text"""
 
-    def __init__(self, author, title, body):
+    def __init__(self, author, title, body, tags):
         self.author = Name(author)
         self.title = Title(title)
         self.body = body
+        self.tags = tags
         self.created_at = datetime.now()  # Time of note creation
 
     def edit_note(self, new_body):
@@ -122,17 +123,18 @@ class Note:
         return {
             'author': self.author.value,
             'title': self.title.value,
-            'body': self.body
+            'body': self.body,
+            'tags': self.tags
         }
 
     @classmethod
     def from_dict(cls, notes):
         # Create a new Note instance from a dictionary
-        record = cls(notes['author'], notes['title'], notes['body'])
+        record = cls(notes['author'], notes['title'], notes['body'], notes['tags'])
         return record
 
     def __str__(self):
-        return f"\nAuthor: {self.author}\nTitle: {self.title}\nCreated at: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}\nNote: {self.body}\n"
+        return f"\nAuthor: {self.author}\nTitle: {self.title}\nCreated at: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}\nNote: {self.body}\nTags: {self.tags}\n"
 
 
 class Notebook(UserDict):
@@ -156,7 +158,44 @@ class Notebook(UserDict):
     # def show_all_notes(self):
     #     for note in self.data.values():
     #         print(f"\nTitle: {note.title.value}\nAuthor: {note.author.value}\nCreated at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    @staticmethod
+    def tag_conversion(tags):
+        if not tags:
+            return ''
 
+        tags = re.findall(r'#?\w+', tags)
+        unique_tags = list(set(tags))
+        sorted_tags = sorted(unique_tags, key=lambda x: x.lower())
+        if sorted_tags[0].startswith("#"):
+            str_tag = ', '.join([f'{tag}' for tag in sorted_tags])
+        else:
+            str_tag = ', '.join([f'#{tag}' for tag in sorted_tags])
+
+        return str_tag
+    
+    def add_tags(self, title, new_tags):
+        note = self.data[title]
+        current_tags = note.tags
+        updated_tags = self.tag_conversion(current_tags + ', ' + new_tags)
+        note.tags = updated_tags
+
+    def sort_notes_by_tags(self):
+        sorted_notes = sorted(self.data.values(), key=lambda note: (len(note.tags), sorted(note.tags, key=lambda tag: tag[1:])))
+        return sorted_notes
+
+    def find_notes_by_tags(self, query):
+        return [note for note in self.data.values() if query in note.tags]
+    
+    def remove_tags(self, title, tags_to_remove):
+        if title in self.data:
+            current_tags = self.data[title].tags.split(', ')
+            updated_tags = [tag for tag in current_tags if tag not in tags_to_remove]
+            self.data[title].tags = ', '.join(updated_tags)
+            return True
+        return False
+
+    
 
 class Record:
     def __init__(self, name, birthday=None):
@@ -201,6 +240,42 @@ class Record:
                 self.phones.insert(idx, tel_new)
                 return f'Number phone {phone_old} has been changed to {tel_new.value}'
         raise ValueError("Phone number not found for changing")
+
+    def remove_email(self, email):
+        tel = Email(email)
+        if tel.value in [item.value for item in self.emails]:
+            self.emails = [item for item in self.emails if tel.value != item.value]
+            return f'Number email {email} has been removed from contact {self.name.value}.'
+        else:
+            return f'email number {email} not found in contact {self.name.value}.'
+
+    def edit_email(self, email_old, email_new):
+        tel_new = Email(email_new)
+        for item in self.emails:
+            if email_old == item.value:
+                idx = self.emails.index(item)
+                self.emails.remove(item)
+                self.emails.insert(idx, tel_new)
+                return f'Number email {email_old} has been changed to {tel_new.value}'
+        raise ValueError("Email number not found for changing")
+            
+    def remove_address(self, address):
+        tel = Address(address)
+        if tel.value in [item.value for item in self.addresses]:
+            self.addresses = [item for item in self.addresses if tel.value != item.value]
+            return f'Number address {address} has been removed from contact {self.name.value}.'
+        else:
+            return f'address number {address} not found in contact {self.name.value}.'
+
+    def edit_address(self, address_old, address_new):
+        tel_new = Address(address_new)
+        for item in self.addresses:
+            if address_old == item.value:
+                idx = self.addresses.index(item)
+                self.addresses.remove(item)
+                self.addresses.insert(idx, tel_new)
+                return f'Number address {address_old} has been changed to {tel_new.value}'
+        raise ValueError("Address number not found for changing")
 
     def find_phone(self, phone):
         tel = Phone(phone)
