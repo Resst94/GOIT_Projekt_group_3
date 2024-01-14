@@ -408,6 +408,7 @@ class AddressBook(UserDict):
     def load_from_disk(self, filename, notebook):
         try:
             with open(filename, 'rb+') as file:
+                print(f"\nReading data from {filename}")
                 data = pickle.load(file)                
                 self.data.clear()  # Clear existing data
                 notebook.data.clear()  # Load contact data
@@ -418,7 +419,7 @@ class AddressBook(UserDict):
 
                 notebook.data.update(data.get('notes', {}))  # Load notes data
         except FileNotFoundError:
-            print("File not found. Creating new file.")
+            print("File not found. Creating a new file.")
         except Exception as e:
             print(f"Error loading data: {str(e)}")
 
