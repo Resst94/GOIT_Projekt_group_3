@@ -208,19 +208,17 @@ def delete_contact():
     
 
 @input_error
-def add_email(command):
-    parts = command.split(" ")
-    if len(parts) == 2:
-        name, email = parts[0], parts[1]
-        record = address_book.find(name)
-        if record:
-            email_field = Email(email)
-            record.add_email(email_field.value)
-            return f"Email {email} added to contact {name}."
-        else:
-            raise KeyError(f"Contact {name} not found")
+def add_email():
+    name = input("Enter the name of the contact to add email to: ").strip()
+    email = input("Enter the email to add: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        email_field = Email(email)
+        record.add_email(email_field.value)
+        return f"Email {email} added to contact {name}."
     else:
-        raise ValueError("Invalid command format. Please enter name and email.")
+        raise KeyError(f"Contact {name} not found")
 
 @input_error
 def search_contact_by_birthday():
@@ -235,19 +233,16 @@ def search_contact_by_birthday():
     return result
 
 @input_error
-def add_address(command):
-    parts = command.split(" ", 1)
-    if len(parts) == 2:
-        name, address = parts[0], parts[1]
-        record = address_book.find(name)
-        if record:
-            address_field = Address(address)
-            record.add_address(address_field.value)
-            return f"Address {address} added to contact {name}."
-        else:
-            raise KeyError(f"Contact {name} not found")
+def add_address():
+    name = input("Enter the name of the contact to add an address: ").strip()
+    address = input("Enter the address you want to add: ").strip()
+    record = address_book.find(name)
+    if record:
+        address_field = Address(address)
+        record.add_address(address_field.value)
+        return f"Address '{address}' added to contact '{name}'."
     else:
-        raise ValueError("Invalid command format. Please enter name and email.")
+        raise KeyError(f"Contact '{name}' not found")
 
 @input_error
 def remove_email_from_contact():
@@ -436,12 +431,12 @@ commands = {
     #"add phone": ,
     "add email": add_email,
     "add adres": add_address,
-    "change phone": change_phone,
-    "change birthday": update_birthday,
+    # "change phone": change_phone,
+    # "change birthday": update_birthday,
     #"change name": ,
     "change email": change_email,
     "change address": change_address,
-    "remove phone": remove_phone_from_contact,
+    # "remove phone": remove_phone_from_contact,
     "remove email": remove_email_from_contact,
     "remove address": remove_address_from_contact,
     "clear all": address_book.clear_all_contacts,
