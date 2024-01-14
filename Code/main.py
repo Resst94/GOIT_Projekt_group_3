@@ -98,20 +98,6 @@ def add_contact_interactive():
     return f"Contact {name} has been added : \n" + "\n".join(added_info)
 
 @input_error
-def change_phone():
-    name = input("Please enter the contact's name: ").strip()
-    old_phone = input("Please enter the old phone number: ").strip()
-    new_phone = input("Please enter the new phone number: ").strip()
-    record = address_book.find(name)
-    if record:
-        new_phone_field = Phone(new_phone)
-        result = record.edit_phone(old_phone, new_phone_field.value)
-        return result
-    else:
-        raise KeyError(f"Contact {name} not found")
-
-
-@input_error
 def get_phone():
     name = input("Enter the name to get phone numbers: ").strip()
     if not name:
@@ -196,29 +182,6 @@ def when_birthday():
         return f"Days until birthday for {name}: {record.days_to_birthday()} days."
     else:
         raise KeyError(f"No record found for '{name}' in the address book.")
-    
-
-@input_error
-def update_birthday():
-    name = input("Please enter the contact's name: ").strip()
-    new_birthday = input("Please enter the new birthday: ").strip()
-    record = address_book.find(name)
-    if record:
-        record.update_birthday(new_birthday)
-        return f"Birthday for {name} updated to {new_birthday}."
-    else:
-        raise KeyError(f"Contact {name} not found")
-
-@input_error
-def remove_phone_from_contact():
-    name = input("Please enter the contact's name: ").strip()
-    phone = input("Please enter the phone number to remove: ").strip()
-    record = address_book.find(name)
-    if record:
-        result = record.remove_phone(phone)
-        return result
-    else:
-        raise KeyError(f"Contact {name} not found")
 
 
 @input_error
@@ -245,17 +208,19 @@ def delete_contact():
     
 
 @input_error
-def add_email():
-    name = input("Please enter the contact's name: ").strip()
-    email = input("Please enter the email: ").strip()
-    record = address_book.find(name)
-    if record:
-        email_field = Email(email)
-        record.add_email(email_field.value)
-        return f"Email {email} added to contact {name}."
+def add_email(command):
+    parts = command.split(" ")
+    if len(parts) == 2:
+        name, email = parts[0], parts[1]
+        record = address_book.find(name)
+        if record:
+            email_field = Email(email)
+            record.add_email(email_field.value)
+            return f"Email {email} added to contact {name}."
+        else:
+            raise KeyError(f"Contact {name} not found")
     else:
-        raise KeyError(f"Contact {name} not found")
-
+        raise ValueError("Invalid command format. Please enter name and email.")
 
 @input_error
 def search_contact_by_birthday():
@@ -270,16 +235,19 @@ def search_contact_by_birthday():
     return result
 
 @input_error
-def add_address():
-    name = input("Please enter the contact's name: ").strip()
-    address = input("Please enter the address: ").strip()
-    record = address_book.find(name)
-    if record:
-        address_field = Address(address)
-        record.add_address(address_field.value)
-        return f"Address {address} added to contact {name}."
+def add_address(command):
+    parts = command.split(" ", 1)
+    if len(parts) == 2:
+        name, address = parts[0], parts[1]
+        record = address_book.find(name)
+        if record:
+            address_field = Address(address)
+            record.add_address(address_field.value)
+            return f"Address {address} added to contact {name}."
+        else:
+            raise KeyError(f"Contact {name} not found")
     else:
-        raise KeyError(f"Contact {name} not found")
+        raise ValueError("Invalid command format. Please enter name and email.")
 
 @input_error
 def remove_email_from_contact():
@@ -521,3 +489,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
