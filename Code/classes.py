@@ -159,6 +159,7 @@ class Notebook(UserDict):
     #     for note in self.data.values():
     #         print(f"\nTitle: {note.title.value}\nAuthor: {note.author.value}\nCreated at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
     
+
     @staticmethod
     def tag_conversion(tags):
         if not tags:
@@ -195,7 +196,6 @@ class Notebook(UserDict):
             return True
         return False
 
-    
 
 class Record:
     def __init__(self, name, birthday=None):
@@ -378,8 +378,6 @@ class AddressBook(UserDict):
             print(f"Error saving data to '{filename}': {str(e)}")
 
     def load_from_disk(self, filename):
-        while not filename.strip():
-            filename = input("Enter a valid filename: ").strip()
         try:
             with open(filename, 'rb+') as file:
                 print(f"\nReading data from {filename}")

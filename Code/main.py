@@ -51,8 +51,8 @@ def help():
         'sort notes'                                            - Sort notes by tags in alphabetical order.
 
         'sort folder'                                           - Sorts a folder by different types of files at the specified pathю
-        
         'exit' or 'close' or 'good bye'                         - Exit the program."""
+
 
 
 @input_error
@@ -160,7 +160,6 @@ def show_all_contacts():
 
 
 def exit_bot():
-    save_to_disk()
     return "Good bye!"
 
 @input_error
@@ -168,14 +167,12 @@ def unknown_command():
     return f"Unknown command: Type 'help' for available commands."
 
 @input_error
-def save_to_disk():
-    filename = input("Enter the filename to save the address book: ").strip()
+def save_to_disk(filename):
     address_book.save_to_disk(filename)
     return f"Address book saved to {filename}"
 
 @input_error
-def load_from_disk():
-    filename = input("Enter the filename to load/create the address book: : ").strip()
+def load_from_disk(filename):
     address_book.load_from_disk(filename)
     return f"Address book loaded from {filename}"
 
@@ -260,6 +257,7 @@ def sort_folder():
     except Exception as e:
         print(f"Unexpected Error: {e}")
         return "\nAn unexpected error occurred. Please check your input and try again."
+
 
 @input_error
 def delete_contact(command):
@@ -449,11 +447,11 @@ def show_all_notes():
 @input_error
 def add_tag():
     title = input("Enter the title where you want to add tags: ").strip()
+    
     if title not in notebook.data.keys():
         raise ValueError(f"Note '{title}' not found")
 
     data_tags = notebook.data[title].tags
-
     tags = notebook.tag_conversion(input("Enter a tags: ").strip())
     tag_list = tags.split(', ')
     unique_tags = ''
@@ -486,7 +484,7 @@ def find_notes_by_tags():
     for note in results:
         result += f"\nAuthor: {note.author.value}\nTitle: {note.title.value}\nNote: {note.body}\n"
     return result
-
+ 
 @input_error
 def remove_tag():
     title = input("Enter the title from which you want to remove tags: ").strip()
@@ -503,7 +501,6 @@ def remove_tag():
     notebook.data[title].tags = ', '.join(updated_tags)
 
     return 'Tags removed'
-
 
 
 commands = {
@@ -558,15 +555,17 @@ def choice_action(data, commands):
     return unknown_command, None
 
 def main():
+    filename = input("Enter the filename to load/create the address book: : ").strip()
+    load_from_disk(filename)
     while True:
         data = input("\nEnter command: ").lower().strip()
         func, args = choice_action(data, commands)
         result = func(args) if args else func()
         print(result)
         if result == "Good bye!":
+            save_to_disk(filename)
             break
 
 if __name__ == "__main__":
-    load_from_disk()
     main()
     
