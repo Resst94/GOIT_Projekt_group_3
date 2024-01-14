@@ -19,10 +19,8 @@ def input_error(func):
             return f"Error: {str(e)}"
     return wrapper
 
-
 def hello():
     return "Welcome to Your Address Book!\nType 'help' to see available commands and instructions."
-
 
 def help():
     return """Please enter the command in accordance with the described capabilities (left column), for the specified type (right column).\n
@@ -44,15 +42,12 @@ def help():
         'delete note <note_title>'                              - Delete an existing note.
         'find notes <query>'                                    - Find notes containing the specified query in the title or body or by author.
         'show all notes'                                        - Display all notes.
-
         'add tags'                                              - Adds tags to an existing note.
         'delete tags'                                           - Remove a tag from a note.
         'find tags'                                             - Search for notes by tags.
         'sort notes'                                            - Sort notes by tags in alphabetical order.
-
         'sort folder'                                           - Sorts a folder by different types of files at the specified pathю
         'exit' or 'close' or 'good bye'                         - Exit the program."""
-
 
 
 @input_error
@@ -60,7 +55,6 @@ def add_contact_interactive():
     name = input("Enter the contact's name: ").strip()
     record = Record(name)
     added_info = []
-
     while True:
         phone = input("Enter a phone number (or nothing to finish): ").strip()
         if phone.lower() == '':
@@ -70,7 +64,6 @@ def add_contact_interactive():
             added_info.append(f"Phone number: {phone}")
         except ValueError as e:
             print(f"Error: {str(e)} Please try again.")
-
     while True:
         email = input("Enter an email address (or nothing to finish): ").strip()
         if email.lower() == '':
@@ -80,7 +73,6 @@ def add_contact_interactive():
             added_info.append(f"Email: {email}")
         except ValueError as e:
             print(f"Error: {str(e)} Please try again.")
-
     while True:
         address = input("Enter an address (or nothing to finish): ").strip()
         if address.lower() == '':
@@ -90,7 +82,6 @@ def add_contact_interactive():
             added_info.append(f"Address: {address}")
         except ValueError as e:
             print(f"Error: {str(e)} Please try again.")
-
     while True:
         birthday = input("Enter the contact's birthday (or nothing if not available): ").strip()
         if birthday.lower() == '':
@@ -111,7 +102,6 @@ def change_phone():
     name = input("Please enter the contact's name: ").strip()
     old_phone = input("Please enter the old phone number: ").strip()
     new_phone = input("Please enter the new phone number: ").strip()
-
     record = address_book.find(name)
     if record:
         new_phone_field = Phone(new_phone)
@@ -179,7 +169,6 @@ def load_from_disk(filename):
 def search_contacts():
     query = input("Enter part of the name or phone number: ").strip()
     results = address_book.search_contacts(query)
-
     if results:
         result = f"Search results for '{query}':\n"
         for record in results:
@@ -217,7 +206,6 @@ def when_birthday(command):
 def update_birthday():
     name = input("Please enter the contact's name: ").strip()
     new_birthday = input("Please enter the new birthday: ").strip()
-
     record = address_book.find(name)
     if record:
         record.update_birthday(new_birthday)
@@ -229,7 +217,6 @@ def update_birthday():
 def remove_phone_from_contact():
     name = input("Please enter the contact's name: ").strip()
     phone = input("Please enter the phone number to remove: ").strip()
-
     record = address_book.find(name)
     if record:
         result = record.remove_phone(phone)
@@ -242,14 +229,10 @@ def remove_phone_from_contact():
 def sort_folder():
     try:
         source_folder = input("Enter the path of the folder you want to sort: ")
-        
         if not source_folder:
             raise ValueError("Please specify the source folder.")
-        
         sort.main(source_folder)
-        
         return "\nThe folder is sorted \N{winking face}\nThank you for using our sorter \N{saluting face}\nHave a nice day \N{smiling face with smiling eyes}"
-
     except Exception as e:
         print(f"Unexpected Error: {e}")
         return "\nAn unexpected error occurred. Please check your input and try again."
@@ -272,7 +255,6 @@ def delete_contact(command):
 def add_email():
     name = input("Please enter the contact's name: ").strip()
     email = input("Please enter the email: ").strip()
-
     record = address_book.find(name)
     if record:
         email_field = Email(email)
@@ -296,7 +278,6 @@ def search_contact_by_birthday(request):
 def add_address():
     name = input("Please enter the contact's name: ").strip()
     address = input("Please enter the address: ").strip()
-
     record = address_book.find(name)
     if record:
         address_field = Address(address)
@@ -309,7 +290,6 @@ def add_address():
 def remove_email_from_contact():
     name = input("Please enter the contact's name: ").strip()
     email = input("Please enter the email to remove: ").strip()
-
     record = address_book.find(name)
     if record:
         result = record.remove_email(email)
@@ -322,7 +302,6 @@ def change_email():
     name = input("Please enter the contact's name: ").strip()
     old_email = input("Please enter the old email: ").strip()
     new_email = input("Please enter the new email: ").strip()
-
     record = address_book.find(name)
     if record:
         new_email_field = Email(new_email)
@@ -335,7 +314,6 @@ def change_email():
 def remove_address_from_contact():
     name = input("Please enter the contact's name: ").strip()
     address = input("Please enter the address to remove: ").strip()
-
     record = address_book.find(name)
     if record:
         result = record.remove_address(address)
@@ -348,7 +326,6 @@ def change_address():
     name = input("Please enter the contact's name: ").strip()
     old_address = input("Please enter the old address: ").strip()
     new_address = input("Please enter the new address: ").strip()
-
     record = address_book.find(name)
     if record:
         new_address_field = Address(new_address)
@@ -439,10 +416,8 @@ def show_all_notes():
 @input_error
 def add_tag():
     title = input("Enter the title where you want to add tags: ").strip()
-    
     if title not in notebook.data.keys():
         raise ValueError(f"Note '{title}' not found")
-
     data_tags = notebook.data[title].tags
     tags = notebook.tag_conversion(input("Enter a tags: ").strip())
     tag_list = tags.split(', ')
@@ -453,7 +428,6 @@ def add_tag():
     if len(unique_tags) != 0:
         notebook.add_tags(title, unique_tags)
     return 'Tags added'
-
 
 def sort_notes_by_tags():
     sorted_notes = notebook.sort_notes_by_tags()
@@ -480,18 +454,13 @@ def find_notes_by_tags():
 @input_error
 def remove_tag():
     title = input("Enter the title from which you want to remove tags: ").strip()
-
     if title not in notebook.data.keys():
         raise ValueError(f"Note '{title}' not found")
-
     data_tags = notebook.data[title].tags
-
     tags_to_remove = notebook.tag_conversion(input("Enter tags to remove: ").strip())
     tags_to_remove_list = tags_to_remove.split(', ')
-
     updated_tags = [tag for tag in data_tags.split(', ') if tag not in tags_to_remove_list]
     notebook.data[title].tags = ', '.join(updated_tags)
-
     return 'Tags removed'
 
 
