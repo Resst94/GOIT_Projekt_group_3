@@ -49,7 +49,6 @@ def help():
         'sort folder'                                           - Sorts a folder by different types of files at the specified pathю
         'exit' or 'close' or 'good bye' or '.'                  - Exit the program."""
 
-
 @input_error
 def add_contact_interactive():
     name = input("Enter the contact's name: ").strip()
@@ -102,6 +101,12 @@ def get_phone():
     name = input("Enter the name to get phone numbers: ").strip()
     if not name:
         raise ValueError("Name cannot be empty")
+        
+@input_error
+def change_phone():
+    name = input("Please enter the contact's name: ").strip()
+    old_phone = input("Please enter the old phone number: ").strip()
+    new_phone = input("Please enter the new phone number: ").strip()
     record = address_book.find(name)
     if record:
         phones_info = ', '.join(phone.value for phone in record.phones)
@@ -172,11 +177,33 @@ def search_contacts():
         return result
     else:
         return(f"No results found for '{query}'.")
-
+      
  
 @input_error
 def when_birthday():
     name = input("Enter the name to check for birthday: ").strip()
+    record = address_book.find(name)
+    if record:
+        return f"Days until birthday for {name}: {record.days_to_birthday()} days."
+    else:
+        raise KeyError(f"No record found for '{name}' in the address book.")
+
+
+@input_error
+def update_birthday():
+    name = input("Please enter the contact's name: ").strip()
+    new_birthday = input("Please enter the new birthday: ").strip()
+    record = address_book.find(name)
+    if record:
+        record.update_birthday(new_birthday)
+        return f"Birthday for {name} updated to {new_birthday}."
+    else:
+        raise KeyError(f"Contact {name} not found")
+
+@input_error
+def remove_phone_from_contact():
+    name = input("Please enter the contact's name: ").strip()
+    phone = input("Please enter the phone number to remove: ").strip()
     record = address_book.find(name)
     if record:
         return f"Days until birthday for {name}: {record.days_to_birthday()} days."
@@ -305,16 +332,17 @@ def create_note():
 
 @input_error
 def find_note():
-    query = input("Enter the search query for notes: ").strip()
+    query = input("Enter search query for notes (author, title, or content): ").strip()
     if not query:
         return "Please provide a search query."
     results = notebook.find_notes(query)
-    if not results:
+    if results:
+        result = "Found notes:\n"
+        for note in results:
+            result += f"Author: {note.author.value}\nTitle: {note.title.value}\nNote: {note.body}\nTags: {note.tags}\n\n"
+        return result
+    else:
         return "No notes found with the given query."
-    result = "Found notes:\n"
-    for note in results:
-        result += f"Author: {note.author.value}\nTitle: {note.title.value}\nNote: {note.body}\n"
-    return result
 
 
 @input_error
@@ -472,14 +500,14 @@ def choice_action(data, commands):
 
 def main():
     filename = input("Enter the filename to load/create the address book: : ").strip()
-    load_from_disk(filename)
+    address_book.load_from_disk(filename, notebook)
     while True:
         data = input("\nEnter command: ").lower().strip()
         func, args = choice_action(data, commands)
         result = func(args) if args else func()
         print(result)
         if result == "Good bye!":
-            save_to_disk(filename)
+            address_book.save_to_disk(filename, notebook)
             break
 
 if __name__ == "__main__":
