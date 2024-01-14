@@ -49,7 +49,7 @@ def help():
     
         'delete tags'                                           - Remove a tag from a note.
         'find tags'                                             - Search for notes by tags.
-        'sort notes'                                            - Sort notes by tags in alphabetical order."""
+        'sort notes'                                            - Sort notes by tags in alphabetical order.
 
         'add tags'                                              - Adds tags to an existing note.
         'exit' or 'close' or 'good bye'                         - Exit the program."""
