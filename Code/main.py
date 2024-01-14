@@ -107,19 +107,18 @@ def add_contact_interactive():
     return f"Contact {name} has been added : \n" + "\n".join(added_info)
 
 @input_error
-def change_phone(command):
-    parts = command.split(" ")
-    if len(parts) == 3:
-        name, old_phone, new_phone = parts[0], parts[1], parts[2]
-        record = address_book.find(name)
-        if record:
-            new_phone_field = Phone(new_phone)
-            result = record.edit_phone(old_phone, new_phone_field.value)
-            return result
-        else:
-            raise KeyError(f"Contact {name} not found")
+def change_phone():
+    name = input("Please enter the contact's name: ").strip()
+    old_phone = input("Please enter the old phone number: ").strip()
+    new_phone = input("Please enter the new phone number: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        new_phone_field = Phone(new_phone)
+        result = record.edit_phone(old_phone, new_phone_field.value)
+        return result
     else:
-        raise ValueError("Invalid command format. Please enter name old phone and new phone.")
+        raise KeyError(f"Contact {name} not found")
 
 @input_error
 def get_phone(command):
@@ -215,32 +214,29 @@ def when_birthday(command):
         raise ValueError
 
 @input_error
-def update_birthday(command):
-    parts = command.split(" ")
-    if len(parts) == 2:
-        name, new_birthday = parts[0], parts[1]
-        record = address_book.find(name)
-        if record:
-            record.update_birthday(new_birthday)
-            return f"Birthday for {name} updated to {new_birthday}."
-        else:
-            raise KeyError(f"Contact {name} not found")
+def update_birthday():
+    name = input("Please enter the contact's name: ").strip()
+    new_birthday = input("Please enter the new birthday: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        record.update_birthday(new_birthday)
+        return f"Birthday for {name} updated to {new_birthday}."
     else:
-        raise ValueError("Invalid command format. Please enter old_birthday name new_birthday.")
+        raise KeyError(f"Contact {name} not found")
 
 @input_error
-def remove_phone_from_contact(command):
-    parts = command.split(" ")
-    if len(parts) == 2:
-        name, phone = parts[0], parts[1]
-        record = address_book.find(name)
-        if record:
-            result = record.remove_phone(phone)
-            return result
-        else:
-            raise KeyError
+def remove_phone_from_contact():
+    name = input("Please enter the contact's name: ").strip()
+    phone = input("Please enter the phone number to remove: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        result = record.remove_phone(phone)
+        return result
     else:
-        raise ValueError
+        raise KeyError(f"Contact {name} not found")
+
 
 @input_error
 def sort_folder():
@@ -273,19 +269,17 @@ def delete_contact(command):
         raise ValueError("Invalid command format for deleting a contact.")
     
 @input_error
-def add_email(command):
-    parts = command.split(" ")
-    if len(parts) == 2:
-        name, email = parts[0], parts[1]
-        record = address_book.find(name)
-        if record:
-            email_field = Email(email)
-            record.add_email(email_field.value)
-            return f"Email {email} added to contact {name}."
-        else:
-            raise KeyError(f"Contact {name} not found")
+def add_email():
+    name = input("Please enter the contact's name: ").strip()
+    email = input("Please enter the email: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        email_field = Email(email)
+        record.add_email(email_field.value)
+        return f"Email {email} added to contact {name}."
     else:
-        raise ValueError("Invalid command format. Please enter name and email.")
+        raise KeyError(f"Contact {name} not found")
 
 @input_error
 def search_contact_by_birthday(request):
@@ -299,19 +293,17 @@ def search_contact_by_birthday(request):
     return result
 
 @input_error
-def add_address(command):
-    parts = command.split(" ", 1)
-    if len(parts) == 2:
-        name, address = parts[0], parts[1]
-        record = address_book.find(name)
-        if record:
-            address_field = Address(address)
-            record.add_address(address_field.value)
-            return f"Address {address} added to contact {name}."
-        else:
-            raise KeyError(f"Contact {name} not found")
+def add_address():
+    name = input("Please enter the contact's name: ").strip()
+    address = input("Please enter the address: ").strip()
+
+    record = address_book.find(name)
+    if record:
+        address_field = Address(address)
+        record.add_address(address_field.value)
+        return f"Address {address} added to contact {name}."
     else:
-        raise ValueError("Invalid command format. Please enter name and email.")
+        raise KeyError(f"Contact {name} not found")
 
 @input_error
 def remove_email_from_contact():
@@ -525,15 +517,7 @@ commands = {
     "search": search_contacts,
     "finde phone": get_phone,
     "show all contacts": show_all_contacts,
-    "good bye": exit_bot,
-    "close": exit_bot,
-    "exit": exit_bot,
-    ".": exit_bot,
-
-    "sort folder": sort_folder, 
-    "save": save_to_disk,
-    "load": load_from_disk,
-
+    "sort folder": sort_folder,
     "create note": create_note,
     "change title": change_note_title,
     'add tags': add_tag,
@@ -541,10 +525,13 @@ commands = {
     "delete note": remove_note,
     "find note": find_note,
     "show all notes": show_all_notes,
-
     "find tags": find_notes_by_tags,
     "sort notes": sort_notes_by_tags,
-    "delete tags": remove_tag
+    "delete tags": remove_tag,
+    "good bye": exit_bot,
+    "close": exit_bot,
+    "exit": exit_bot,
+    ".": exit_bot
 }
 
 def choice_action(data, commands):
@@ -568,4 +555,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
