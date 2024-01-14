@@ -364,30 +364,61 @@ class AddressBook(UserDict):
         for i in range(0, len(self.data), n):
             yield list(self.data.values())[i:i + n]
 
-    def save_to_disk(self, filename):
-        while not filename.strip():
-            filename = input("Enter a valid filename: ").strip()
+    # def save_to_disk(self, filename):
+    #     while not filename.strip():
+    #         filename = input("Enter a valid filename: ").strip()
+
+    #     try:
+    #         with open(filename, 'wb+') as file:
+    #             data = [record.to_dict() for record in self.data.values()]
+    #             pickle.dump(data, file)
+    #     except FileNotFoundError:
+    #         print(f"Error: The specified directory or file '{filename}' does not exist.")
+    #     except Exception as e:
+    #         print(f"Error saving data to '{filename}': {str(e)}")
+
+    def save_to_disk(self, filename, notebook):
+        data = {
+            'contacts': [record.to_dict() for record in self.data.values()],
+            'notes': notebook.data
+        }
 
         try:
             with open(filename, 'wb+') as file:
-                data = [record.to_dict() for record in self.data.values()]
                 pickle.dump(data, file)
         except FileNotFoundError:
             print(f"Error: The specified directory or file '{filename}' does not exist.")
         except Exception as e:
             print(f"Error saving data to '{filename}': {str(e)}")
 
-    def load_from_disk(self, filename):
+    # def load_from_disk(self, filename):
+    #     try:
+    #         with open(filename, 'rb+') as file:
+    #             print(f"\nReading data from {filename}")
+    #             data = pickle.load(file)
+    #             self.data.clear()
+    #             for record_data in data:
+    #                 record = Record.from_dict(record_data)
+    #                 self.data[str(record.name)] = record
+    #     except FileNotFoundError:
+    #         print("File not found. Creating a new address book.")
+    #     except Exception as e:
+    #         print(f"Error loading data: {str(e)}")
+
+    def load_from_disk(self, filename, notebook):
         try:
             with open(filename, 'rb+') as file:
-                print(f"\nReading data from {filename}")
-                data = pickle.load(file)
-                self.data.clear()
-                for record_data in data:
+                data = pickle.load(file)                
+                self.data.clear()  # Clear existing data
+                notebook.data.clear()  # Load contact data
+
+                for record_data in data.get('contacts', []):
                     record = Record.from_dict(record_data)
                     self.data[str(record.name)] = record
+
+                notebook.data.update(data.get('notes', {}))  # Load notes data
         except FileNotFoundError:
-            print("File not found. Creating a new address book.")
+            print("File not found. Creating new file.")
         except Exception as e:
             print(f"Error loading data: {str(e)}")
 

@@ -543,14 +543,14 @@ def choice_action(data, commands):
 
 def main():
     filename = input("Enter the filename to load/create the address book: : ").strip()
-    load_from_disk(filename)
+    address_book.load_from_disk(filename, notebook)
     while True:
         data = input("\nEnter command: ").lower().strip()
         func, args = choice_action(data, commands)
         result = func(args) if args else func()
         print(result)
         if result == "Good bye!":
-            save_to_disk(filename)
+            address_book.save_to_disk(filename, notebook)
             break
 
 if __name__ == "__main__":
