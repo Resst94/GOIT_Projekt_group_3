@@ -345,17 +345,16 @@ def create_note():
     return f"Note '{title}' by {author} has been added."
 
 @input_error
-def find_note(command):
-    query = command.strip()
-    if not query:
-        return "Please provide a search query."
+def find_note():
+    query = input("Enter search query for notes (author, title, or content): ").strip()
     results = notebook.find_notes(query)
-    if not results:
+    if results:
+        result = "Found notes:\n"
+        for note in results:
+            result += f"Author: {note.author.value}\nTitle: {note.title.value}\nNote: {note.body}\nTags: {note.tags}\n\n"
+        return result
+    else:
         return "No notes found with the given query."
-    result = "Found notes:\n"
-    for note in results:
-        result += f"Author: {note.author.value}\nTitle: {note.title.value}\nNote: {note.body}\n"
-    return result
 
 @input_error
 def change_note_title(command):
@@ -512,14 +511,14 @@ def choice_action(data, commands):
 
 def main():
     filename = input("Enter the filename to load/create the address book: : ").strip()
-    load_from_disk(filename)
+    address_book.load_from_disk(filename, notebook)
     while True:
         data = input("\nEnter command: ").lower().strip()
         func, args = choice_action(data, commands)
         result = func(args) if args else func()
         print(result)
         if result == "Good bye!":
-            save_to_disk(filename)
+            address_book.save_to_disk(filename, notebook)
             break
 
 if __name__ == "__main__":
