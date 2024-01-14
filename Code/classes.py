@@ -144,7 +144,9 @@ class Notebook(UserDict):
         self.data[note.title.value] = note
 
     def find_notes(self, query):
-        return [note for note in self.data.values() if query in note.title.value or query in note.body or query in note.author.value]
+        query_lower = query.lower()
+        return [note for note in self.data.values() if query_lower in note.title.value.lower() or query_lower in note.body.lower() or query_lower in note.author.value.lower()]
+    
 
     def delete_note(self, title):
         if title in self.data:

@@ -368,17 +368,16 @@ def create_note():
     return f"Note '{title}' by {author} has been added."
 
 @input_error
-def find_note(command):
-    query = command.strip()
-    if not query:
-        return "Please provide a search query."
+def find_note():
+    query = input("Enter search query for notes (author, title, or content): ").strip()
     results = notebook.find_notes(query)
-    if not results:
+    if results:
+        result = "Found notes:\n"
+        for note in results:
+            result += f"Author: {note.author.value}\nTitle: {note.title.value}\nNote: {note.body}\nTags: {note.tags}\n\n"
+        return result
+    else:
         return "No notes found with the given query."
-    result = "Found notes:\n"
-    for note in results:
-        result += f"Author: {note.author.value}\nTitle: {note.title.value}\nNote: {note.body}\n"
-    return result
 
 @input_error
 def change_note_title(command):
