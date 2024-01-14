@@ -564,6 +564,5 @@ def main():
             break
 
 if __name__ == "__main__":
-    load_from_disk()
     main()
     
