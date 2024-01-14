@@ -44,12 +44,13 @@ def help():
         'delete note <note_title>'                              - Delete an existing note.
         'find notes <query>'                                    - Find notes containing the specified query in the title or body or by author.
         'show all notes'                                        - Display all notes.
-    
+
+        'add tags'                                              - Adds tags to an existing note.
         'delete tags'                                           - Remove a tag from a note.
         'find tags'                                             - Search for notes by tags.
         'sort notes'                                            - Sort notes by tags in alphabetical order.
 
-        'add tags'                                              - Adds tags to an existing note.
+        'sort folder'                                           - Sorts a folder by different types of files at the specified pathю
         'exit' or 'close' or 'good bye'                         - Exit the program."""
 
 
@@ -237,17 +238,21 @@ def remove_phone_from_contact():
         raise KeyError(f"Contact {name} not found")
 
 
-
-def sort_folder(args=None):
+@input_error
+def sort_folder():
     try:
-        if args is None:
+        source_folder = input("Enter the path of the folder you want to sort: ")
+        
+        if not source_folder:
             raise ValueError("Please specify the source folder.")
-        else:
-            sort.main(args)
-            return("\nThe folder is sorted \N{winking face}\nThank you for using our sorter \N{saluting face}\nHave a nice day \N{smiling face with smiling eyes}")
+        
+        sort.main(source_folder)
+        
+        return "\nThe folder is sorted \N{winking face}\nThank you for using our sorter \N{saluting face}\nHave a nice day \N{smiling face with smiling eyes}"
+
     except Exception as e:
-        print(f"Error: {e}")
-        return("\nPlease usage: sort folder <source_folder>")
+        print(f"Unexpected Error: {e}")
+        return "\nAn unexpected error occurred. Please check your input and try again."
 
 
 @input_error
