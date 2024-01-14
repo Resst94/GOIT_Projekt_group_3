@@ -46,8 +46,14 @@ def help():
         'delete note <note_title>'                              - Delete an existing note.
         'find notes <query>'                                    - Find notes containing the specified query in the title or body or by author.
         'show all notes'                                        - Display all notes.
+    
+        'delete tags'                                           - Remove a tag from a note.
+        'find tags'                                             - Search for notes by tags.
+        'sort notes'                                            - Sort notes by tags in alphabetical order."""
+
         'add tags'                                              - Adds tags to an existing note.
         'exit' or 'close' or 'good bye'                         - Exit the program."""
+
 
 
 @input_error
@@ -129,6 +135,7 @@ def get_phone(command):
             raise KeyError
     else:
         raise ValueError
+
 
 @input_error
 def show_all_contacts():
@@ -236,16 +243,18 @@ def remove_phone_from_contact(command):
     else:
         raise ValueError
 
+
 def sort_folder(args=None):
     try:
         if args is None:
             raise ValueError("Please specify the source folder.")
         else:
             sort.main(args)
-            return("The folder is sorted \N{winking face}")
+            return("\nThe folder is sorted \N{winking face}\nThank you for using our sorter \N{saluting face}\nHave a nice day \N{smiling face with smiling eyes}")
     except Exception as e:
         print(f"Error: {e}")
-        return("\nPlease usage: sort <source_folder>")
+        return("\nPlease usage: sort folder <source_folder>")
+
 
 @input_error
 def delete_contact(command):
@@ -358,7 +367,7 @@ def create_note():
     author = input("Enter the author's name: ").strip()
     title = input("Enter the note's title: ").strip()
     body = input("Enter the note's body: ").strip()    
-    tags = tag_conversion(input("Enter the note's tags: ").strip())
+    tags = notebook.tag_conversion(input("Enter the note's tags: ").strip())
     note = Note(author, title, body, tags)
     notebook.add_note(note)    
     return f"Note '{title}' by {author} has been added."
@@ -421,7 +430,7 @@ def remove_note(command):
 def show_all_notes():
     notes = notebook.data.values()
     if notes:
-        result = "All notes:\n"
+        result = "\nAll notes:\n"
         for note in notes:
             result += f"Title: {note.title.value}\n"
             result += f"Author: {note.author.value}\n"
@@ -435,42 +444,61 @@ def show_all_notes():
 @input_error
 def add_tag():
     title = input("Enter the title where you want to add tags: ").strip()
+    
+    if title not in notebook.data.keys():
+        raise ValueError(f"Note '{title}' not found")
+
+    data_tags = notebook.data[title].tags
+    tags = notebook.tag_conversion(input("Enter a tags: ").strip())
+    tag_list = tags.split(', ')
+    unique_tags = ''
+    for tag in tag_list:
+        if tag not in data_tags:    
+            unique_tags += f'{tag}' if tag == tag_list[-1] else f'{tag}, '
+    if len(unique_tags) != 0:
+        notebook.add_tags(title, unique_tags)
+    return 'Tags added'
+
+
+def sort_notes_by_tags():
+    sorted_notes = notebook.sort_notes_by_tags()
+    result = "\nAll notes sorted by tags alphabetically:\n"
+    for note in sorted_notes:
+        result += f"\nTitle: {note.title.value}\n"
+        result += f"Author: {note.author.value}\n"
+        result += f"Created at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        result += f"Note: {note.body}\n"
+        result += f"Tags: {note.tags}\n\n"
+    return result
+
+@input_error
+def find_notes_by_tags():
+    tags = input("Enter the tag by which to start searching: ").strip()
+    results = notebook.find_notes_by_tags(tags)
+    if not results:
+        return f"No notes found with the specified tag: {tags}."
+    result = f"\nHere are the notes found by tags '{tags}':\n"
+    for note in results:
+        result += f"\nAuthor: {note.author.value}\nTitle: {note.title.value}\nNote: {note.body}\n"
+    return result
+ 
+@input_error
+def remove_tag():
+    title = input("Enter the title from which you want to remove tags: ").strip()
 
     if title not in notebook.data.keys():
         raise ValueError(f"Note '{title}' not found")
 
     data_tags = notebook.data[title].tags
 
-    tags = tag_conversion(input("Enter a tags: ").strip())
-    tag_list = tags.split(', ')
+    tags_to_remove = notebook.tag_conversion(input("Enter tags to remove: ").strip())
+    tags_to_remove_list = tags_to_remove.split(', ')
 
-    unique_tags = ''
+    updated_tags = [tag for tag in data_tags.split(', ') if tag not in tags_to_remove_list]
+    notebook.data[title].tags = ', '.join(updated_tags)
 
-    for tag in tag_list:
+    return 'Tags removed'
 
-        if tag not in data_tags:    
-            unique_tags += f'{tag}' if tag == tag_list[-1] else f'{tag}, '
-
-    if len(tag) != 0:
-        notebook.add_tags(title, unique_tags)
-
-    return 'tags added'
-
-
-def tag_conversion(tags):
-        if len(tags) == 0:
-            return ''
-        tags = re.findall(r'#?\w*\w', tags)
-
-        str_tag = ''
-        for tag in tags:
-            if tag == tags[-1]:
-                str_tag += f'{tag}' if tag[0] == '#' else f'#{tag}'
-
-            else:
-                str_tag += f'{tag}, ' if tag[0] == '#' else f'#{tag}, '
-
-        return str_tag
 
 commands = {
     "hello": hello,
@@ -499,7 +527,7 @@ commands = {
     "exit": exit_bot,
     ".": exit_bot,
 
-    "sort": sort_folder, 
+    "sort folder": sort_folder, 
     "save": save_to_disk,
     "load": load_from_disk,
 
@@ -509,7 +537,11 @@ commands = {
     "edit note": edit_note_text,
     "delete note": remove_note,
     "find note": find_note,
-    "show all notes": show_all_notes
+    "show all notes": show_all_notes,
+
+    "find tags": find_notes_by_tags,
+    "sort notes": sort_notes_by_tags,
+    "delete tags": remove_tag
 }
 
 def choice_action(data, commands):

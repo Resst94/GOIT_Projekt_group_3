@@ -159,11 +159,43 @@ class Notebook(UserDict):
     #     for note in self.data.values():
     #         print(f"\nTitle: {note.title.value}\nAuthor: {note.author.value}\nCreated at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
     
-    def add_tags(self, title, tags):
-        if self.data[title].tags:
-            self.data[title].tags += f', {tags}'
+
+    @staticmethod
+    def tag_conversion(tags):
+        if not tags:
+            return ''
+
+        tags = re.findall(r'#?\w+', tags)
+        unique_tags = list(set(tags))
+        sorted_tags = sorted(unique_tags, key=lambda x: x.lower())
+        if sorted_tags[0].startswith("#"):
+            str_tag = ', '.join([f'{tag}' for tag in sorted_tags])
         else:
-            self.data[title].tags += tags
+            str_tag = ', '.join([f'#{tag}' for tag in sorted_tags])
+
+        return str_tag
+    
+    def add_tags(self, title, new_tags):
+        note = self.data[title]
+        current_tags = note.tags
+        updated_tags = self.tag_conversion(current_tags + ', ' + new_tags)
+        note.tags = updated_tags
+
+    def sort_notes_by_tags(self):
+        sorted_notes = sorted(self.data.values(), key=lambda note: (len(note.tags), sorted(note.tags, key=lambda tag: tag[1:])))
+        return sorted_notes
+
+    def find_notes_by_tags(self, query):
+        return [note for note in self.data.values() if query in note.tags]
+    
+    def remove_tags(self, title, tags_to_remove):
+        if title in self.data:
+            current_tags = self.data[title].tags.split(', ')
+            updated_tags = [tag for tag in current_tags if tag not in tags_to_remove]
+            self.data[title].tags = ', '.join(updated_tags)
+            return True
+        return False
+
 
 class Record:
     def __init__(self, name, birthday=None):
