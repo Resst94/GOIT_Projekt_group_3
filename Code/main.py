@@ -1,16 +1,32 @@
+from prompt_toolkit import PromptSession
+from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.lexers import PygmentsLexer
+from pygments.lexers.sql import SqlLexer
 from classes import *
 import sort
+import random
 
 address_book = AddressBook()
 notebook = Notebook()
 
+#Completer for commands in terminal:
+sql_completer = WordCompleter([
+    'hello', 'help', 'add contact', 'add phone', 'add email', 'add address',
+    'change phone', 'change birthday', 'change name', 'change email',
+    'change address', 'remove phone', 'remove email', 'remove address',
+    'clear all', 'search by birthday', 'day to birthday', 'delete contact',
+    'search', 'find phone', 'show all contacts', 'sort folder', 'create note',
+    'change title', 'add tags', 'edit note', 'delete note', 'find note',
+    'show all notes', 'find tags', 'sort notes', 'delete tags', 'good bye',
+    'close', 'exit', '.'
+], ignore_case=True)
 
 def input_error(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except KeyError:
-            return "Enter user name"
+            return "Enter a correct information"
         except ValueError as ve:
             return f"ValueError: {str(ve)}"
         except IndexError:
@@ -20,42 +36,59 @@ def input_error(func):
     return wrapper
 
 def hello():
-    return "Welcome to Your Address Book!\nType 'help' to see available commands and instructions."
+    choices = ['Welcome to Your Address Book!', 'Have a good day!', 'A sprinkle of kindness today will sweeten your tomorrow.',
+               "Your day is like a candy bar – full of delightful surprises!", "In the recipe of life, sweetness is the secret ingredient to your success.",
+               "Life is a box of chocolates, and today, you'll find the extra special ones.",
+               "Your future holds a cupcake of joy with extra frosting of love and laughter.",
+               "Love you <3"]
+    random_choice = random.choice(choices)
+    return random_choice
 
 def help():
     return """Please enter the command in accordance with the described capabilities (left column), for the specified type (right column).\n
     Here are some things you can do:\n
-        'add                                                    - Add a new contact with an optional birthday.
-        'add <name_contact> <another_phone>'                    - Add an additional phone number to an existing contact.
-        'birthday add <name_contact> <new_birthday_date>'       - Add or update the birthday of an existing contact.
-        'change phone <name_contact> <old_phone> <new_phone>'   - Change an existing phone number of a contact.
-        'search'                                                - Search for contacts by name or phone number that match the entered string.
-        'day to birthday'                                       - Show the number of days until the birthday for a contact.
-        'finde phone <name_contact>'                            - Show all phone numbers for a contact.
-        'show all'                                              - Display all contacts.
-        'remove <name_contact> <phone_number>'                  - Remove a phone number from an existing contact.
-        'delete contact'                                        - Delete an entire contact.
-        'clear all'                                             - Clear all contacts.
-        'create note'                                           - Create a new note in the Notebook.
-        'change title'                                          - Change the title of an existing note.
-        'edit note'                                             - Edit the content of an existing note.
-        'delete note'                                           - Delete an existing note.
-        'find notes'                                            - Find notes containing the specified query in the title or body or by author.
-        'show all notes'                                        - Display all notes.
-        'add tags'                                              - Adds tags to an existing note.
-        'delete tags'                                           - Remove a tag from a note.
-        'find tags'                                             - Search for notes by tags.
-        'sort notes'                                            - Sort notes by tags in alphabetical order.
-        'sort folder'                                           - Sorts a folder by different types of files at the specified pathю
-        'exit' or 'close' or 'good bye' or '.'                  - Exit the program."""
+    'hello'                                                 - Be polite with our bot;)
+    'help'                                                  - See available commands and instructions.
+    'add contact'                                           - Add a new contact with an optional phone, email, address or birthday.
+    'add phone'                                             - Add an additional phone number to an existing contact.
+    'add email'                                             - Add an additional email to an existing contact.
+    'add address'                                           - Add an additional address to an existing contact.
+    'change phone'                                          - Change the phone number of an existing contact.
+    'change birthday'                                       - Change or add the birthday of an existing contact.
+    'change name'                                           - Change the name phone of an existing contact.
+    'change email'                                          - Change the email of an existing contact.
+    'change address'                                        - Change the address of an existing contact.
+    'remove phone'                                          - Remove a phone from an existing contact.
+    'remove email'                                          - Remove an email from an existing contact.
+    'remove address'                                        - Remove an address from an existing contact.
+    'clear all'                                             - Clear all contacts.
+    'search by birthday'                                    - Search contact by birthday.
+    'day to birthday'                                       - Show the number of days until the birthday for a contact.
+    'delete contact'                                        - Delete an entire contact.
+    'search'                                                - Search for contacts by name or phone number that match the entered string.
+    'find phone'                                            - Show all phone numbers for an contact.
+    'show all contacts'                                     - Show all existing contacts with phones, emails, addresses, birthday.
+    'sort folder'                                           - Sorts a folder by different types of files at the specified path.
+    'create note'                                           - Create a new note in the Notebook.
+    'change title'                                          - Change the title of an existing note.
+    'add tags'                                              - Adds tags to an existing note.
+    'edit note'                                             - Edit the content of an existing note.
+    'delete note'                                           - Delete an existing note.
+    'find note'                                             - Find notes containing the specified query in the title or body or by author.
+    'show all notes'                                        - Display all notes.
+    'find tags'                                             - Search for notes by tags.
+    'sort notes'                                            - Sort notes by tags in alphabetical order.
+    'delete tags'                                           - Remove a tag from a note.
+    'good bye' or 'close' or 'exit' or '.'                  - Exit the program.
+    """
 
 @input_error
 def add_contact_interactive():
-    name = input("Enter the contact's name: ").strip()
+    name = input("Please enter the contact's name: ").strip()
     record = Record(name)
     added_info = []
     while True:
-        phone = input("Enter a phone number (or nothing to finish): ").strip()
+        phone = input("Please enter a phone number (or nothing to finish): ").strip()
         if phone.lower() == '':
             break
         try:
@@ -64,7 +97,7 @@ def add_contact_interactive():
         except ValueError as e:
             print(f"Error: {str(e)} Please try again.")
     while True:
-        email = input("Enter an email address (or nothing to finish): ").strip()
+        email = input("Please enter an email address (or nothing to finish): ").strip()
         if email.lower() == '':
             break
         try:
@@ -73,7 +106,7 @@ def add_contact_interactive():
         except ValueError as e:
             print(f"Error: {str(e)} Please try again.")
     while True:
-        address = input("Enter an address (or nothing to finish): ").strip()
+        address = input("Please enter an address (or nothing to finish): ").strip()
         if address.lower() == '':
             break
         try:
@@ -82,7 +115,7 @@ def add_contact_interactive():
         except ValueError as e:
             print(f"Error: {str(e)} Please try again.")
     while True:
-        birthday = input("Enter the contact's birthday (or nothing if not available): ").strip()
+        birthday = input("Please enter the contact's birthday (or nothing if not available): ").strip()
         if birthday.lower() == '':
             break
         try:
@@ -98,22 +131,14 @@ def add_contact_interactive():
 
 @input_error
 def get_phone():
-    name = input("Enter the name to get phone numbers: ").strip()
-    if not name:
-        raise ValueError("Name cannot be empty")
-        
-@input_error
-def change_phone():
-    name = input("Please enter the contact's name: ").strip()
-    old_phone = input("Please enter the old phone number: ").strip()
-    new_phone = input("Please enter the new phone number: ").strip()
-    record = address_book.find(name)
-    if record:
-        phones_info = ', '.join(phone.value for phone in record.phones)
-        return f"Phone numbers for {name}: {phones_info}"
-    else:
-        raise KeyError(f"No record found for {name}")
-
+    name = input("Please enter the name to get phone numbers: ").strip()
+    records = address_book.data.values()
+    for record in records:
+        if record.name.value.lower() == name.lower():
+            phones_info = ', '.join(phone.value for phone in record.phones)
+            if phones_info:
+                return f"Phone numbers for {name}: {phones_info}"
+    return f"No contact found for {name}"
 
 @input_error
 def show_all_contacts():
@@ -137,7 +162,6 @@ def show_all_contacts():
     else:
         return "Contact list is empty"
 
-
 def exit_bot():
     return "Good bye!"
 
@@ -157,7 +181,7 @@ def load_from_disk(filename):
 
 @input_error
 def search_contacts():
-    query = input("Enter part of the name or phone number: ").strip()
+    query = input("Please enter a part of the name or phone number: ").strip()
     results = address_book.search_contacts(query)
     if results:
         result = f"Search results for '{query}':\n"
@@ -177,44 +201,31 @@ def search_contacts():
         return result
     else:
         return(f"No results found for '{query}'.")
-      
  
 @input_error
 def when_birthday():
-    name = input("Enter the name to check for birthday: ").strip()
+    name = input("Please enter the name to check for birthday: ").strip()
     record = address_book.find(name)
     if record:
         return f"Days until birthday for {name}: {record.days_to_birthday()} days."
     else:
         raise KeyError(f"No record found for '{name}' in the address book.")
-
 
 @input_error
 def update_birthday():
     name = input("Please enter the contact's name: ").strip()
-    new_birthday = input("Please enter the new birthday: ").strip()
     record = address_book.find(name)
     if record:
+        new_birthday = input("Please enter the new birthday: ").strip()
         record.update_birthday(new_birthday)
-        return f"Birthday for {name} updated to {new_birthday}."
+        return f"Birthday for {name} has been updated to {new_birthday}."
     else:
         raise KeyError(f"Contact {name} not found")
 
 @input_error
-def remove_phone_from_contact():
-    name = input("Please enter the contact's name: ").strip()
-    phone = input("Please enter the phone number to remove: ").strip()
-    record = address_book.find(name)
-    if record:
-        return f"Days until birthday for {name}: {record.days_to_birthday()} days."
-    else:
-        raise KeyError(f"No record found for '{name}' in the address book.")
-
-
-@input_error
 def sort_folder():
     try:
-        source_folder = input("Enter the path of the folder you want to sort: ")
+        source_folder = input("Please enter the path of the folder you want to sort: ")
         if not source_folder:
             raise ValueError("Please specify the source folder.")
         sort.main(source_folder)
@@ -223,33 +234,42 @@ def sort_folder():
         print(f"Unexpected Error: {e}")
         return "\nAn unexpected error occurred. Please check your input and try again."
 
-
 @input_error
 def delete_contact():
-    name = input("Enter the name of the contact you want to delete: ").strip()
+    name = input("Please enter the name of the contact you want to delete: ").strip()
     try:
         address_book.delete(name)
-        return f"Contact {name} deleted."
+        return f"Contact {name} has been deleted."
     except KeyError:
         return f"Contact {name} not found."
-    
+
+@input_error
+def add_phone():
+    name = input("Please enter the name of the contact: ").strip()
+    record = address_book.find(name)
+    if record:
+        phone = input("Please enter the phone number to add: ").strip()
+        phone_field = Phone(phone)
+        record.add_phone(phone_field.value)
+        return f"Phone {phone} has been added to contact {name}."
+    else:
+        raise KeyError(f"Contact {name} not found")
 
 @input_error
 def add_email():
-    name = input("Enter the name of the contact to add email to: ").strip()
-    email = input("Enter the email to add: ").strip()
-
+    name = input("Please enter the name of the contact to add email to: ").strip()
     record = address_book.find(name)
     if record:
+        email = input("Please enter the email to add: ").strip()
         email_field = Email(email)
         record.add_email(email_field.value)
-        return f"Email {email} added to contact {name}."
+        return f"Email {email} has been added to contact {name}."
     else:
         raise KeyError(f"Contact {name} not found")
 
 @input_error
 def search_contact_by_birthday():
-    request = input("Enter the range for birthday search : ").strip()
+    request = input("Please enter the range for birthday search : ").strip()
     address = address_book.search_by_birthday(request)
     if len(address) == 0:
         return '\nContacts not found in this range!'
@@ -261,36 +281,34 @@ def search_contact_by_birthday():
 
 @input_error
 def add_address():
-    name = input("Enter the name of the contact to add an address: ").strip()
-    address = input("Enter the address you want to add: ").strip()
+    name = input("Please enter the name of the contact to add an address: ").strip()
     record = address_book.find(name)
     if record:
+        address = input("Please enter the address you want to add: ").strip()
         address_field = Address(address)
         record.add_address(address_field.value)
-        return f"Address '{address}' added to contact '{name}'."
+        return f"Address '{address}' has been added to contact '{name}'."
     else:
         raise KeyError(f"Contact '{name}' not found")
 
 @input_error
-def remove_email_from_contact():
+def remove_phone_from_contact():
     name = input("Please enter the contact's name: ").strip()
-    email = input("Please enter the email to remove: ").strip()
     record = address_book.find(name)
     if record:
-        result = record.remove_email(email)
+        phone = input("Please enter the phone number to remove: ").strip()
+        result = record.remove_phone(phone)
         return result
     else:
         raise KeyError(f"Contact {name} not found")
 
 @input_error
-def change_email():
+def remove_email_from_contact():
     name = input("Please enter the contact's name: ").strip()
-    old_email = input("Please enter the old email: ").strip()
-    new_email = input("Please enter the new email: ").strip()
     record = address_book.find(name)
     if record:
-        new_email_field = Email(new_email)
-        result = record.edit_email(old_email, new_email_field.value)
+        email = input("Please enter the email to remove: ").strip()
+        result = record.remove_email(email)
         return result
     else:
         raise KeyError(f"Contact {name} not found")
@@ -298,10 +316,49 @@ def change_email():
 @input_error
 def remove_address_from_contact():
     name = input("Please enter the contact's name: ").strip()
-    address = input("Please enter the address to remove: ").strip()
     record = address_book.find(name)
     if record:
+        address = input("Please enter the address to remove: ").strip()
         result = record.remove_address(address)
+        return result
+    else:
+        raise KeyError(f"Contact {name} not found")
+
+@input_error
+def change_name():
+    name = input("Please enter the contact's name: ").strip()
+    record = address_book.find(name)
+    if record:
+        new_name = input("Please enter the new name: ").strip()
+        new_name_field = Name(new_name)
+        result = record.edit_name(new_name_field.value)
+        return result
+    else:
+        raise KeyError(f"Contact {name} not found")
+    
+
+@input_error
+def change_phone():
+    name = input("Please enter the contact's name: ").strip()
+    record = address_book.find(name)
+    if record:
+        old_phone = input("Please enter the old phone number: ").strip()
+        new_phone = input("Please enter the new phone number: ").strip()
+        new_phone_field = Phone(new_phone)
+        result = record.edit_phone(old_phone, new_phone_field.value)
+        return result
+    else:
+        raise KeyError(f"Contact {name} not found")
+
+@input_error
+def change_email():
+    name = input("Please enter the contact's name: ").strip()
+    record = address_book.find(name)
+    if record:
+        old_email = input("Please enter the old email: ").strip()
+        new_email = input("Please enter the new email: ").strip()
+        new_email_field = Email(new_email)
+        result = record.edit_email(old_email, new_email_field.value)
         return result
     else:
         raise KeyError(f"Contact {name} not found")
@@ -309,10 +366,10 @@ def remove_address_from_contact():
 @input_error
 def change_address():
     name = input("Please enter the contact's name: ").strip()
-    old_address = input("Please enter the old address: ").strip()
-    new_address = input("Please enter the new address: ").strip()
     record = address_book.find(name)
     if record:
+        old_address = input("Please enter the old address: ").strip()
+        new_address = input("Please enter the new address: ").strip()
         new_address_field = Address(new_address)
         result = record.edit_address(old_address, new_address_field.value)
         return result
@@ -321,18 +378,17 @@ def change_address():
 
 @input_error
 def create_note():
-    author = input("Enter the author's name: ").strip()
-    title = input("Enter the note's title: ").strip()
-    body = input("Enter the note's body: ").strip()    
-    tags = notebook.tag_conversion(input("Enter the note's tags: ").strip())
+    author = input("Please enter the author's name: ").strip()
+    title = input("Please enter the note's title: ").strip()
+    body = input("Please enter the note's text: ").strip()    
+    tags = notebook.tag_conversion(input("Please enter the note's tags: ").strip())
     note = Note(author, title, body, tags)
     notebook.add_note(note)    
-    return f"Note '{title}' by {author} has been added."
-
+    return f"Note '{title}' by {author} has been created."
 
 @input_error
 def find_note():
-    query = input("Enter search query for notes (author, title, or content): ").strip()
+    query = input("Please enter search query for notes (author, title, or content): ").strip()
     if not query:
         return "Please provide a search query."
     results = notebook.find_notes(query)
@@ -344,45 +400,42 @@ def find_note():
     else:
         return "No notes found with the given query."
 
-
 @input_error
 def change_note_title():
-    old_title = input("Enter the current title of the note: ").strip()
-    new_title = input("Enter the new title for the note: ").strip()
+    old_title = input("Please enter the current title of the note: ").strip()
+    new_title = input("Please enter the new title for the note: ").strip()
 
     note = notebook.get_note(old_title)
     if note:
         notebook.delete_note(old_title)
         note.title.value = new_title
         notebook.add_note(note)
-        return f"Note title changed from '{old_title}' to '{new_title}'."
+        return f"Note title has been changed from '{old_title}' to '{new_title}'."
     else:
         raise KeyError(f"Note '{old_title}' not found")
 
-
 @input_error   
 def edit_note_text():
-    title = input("Enter the title of the note you want to edit: ").strip()
+    title = input("Please enter a title of the note you want to edit: ").strip()
     note = notebook.get_note(title)
     if note:
         print(f"Current note text:\n{note.body}")
-        new_body = input("Enter the new note text (or press Enter to keep the current text): ").strip()
+        new_body = input("Please enter a new note text (or press Enter to keep the current text): ").strip()
         if new_body:
             note.edit_note(new_body)
-            return f"Note '{title}' updated."
+            return f"Note '{title}' has been updated."
         else:
-            return "Note text not changed."
+            return "Note's content has not been changed."
     else:
         raise KeyError(f"Note '{title}' not found")
 
-    
 @input_error
 def remove_note():
-    title = input("Enter the title of the note you want to delete: ").strip()
+    title = input("Please enter the title of the note you want to delete: ").strip()
     note = notebook.get_note(title)
     if note:
         notebook.delete_note(title)
-        return f"Note '{title}' deleted."
+        return f"Note '{title}' has been deleted."
     else:
         raise KeyError(f"Note '{title}' not found")
     
@@ -392,22 +445,22 @@ def show_all_notes():
     if notes:
         result = "\nAll notes:\n"
         for note in notes:
-            result += f"Title: {note.title.value}\n"
-            result += f"Author: {note.author.value}\n"
-            result += f"Created at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
-            result += f"Note: {note.body}\n"
-            result += f"Tags: {note.tags}\n\n"
+            result += f"  Title: {note.title.value}\n"
+            result += f"  Author: {note.author.value}\n"
+            result += f"  Created at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            result += f"  Note: {note.body}\n"
+            result += f"  Tags: {note.tags}\n\n"
         return result
     else:
         return "No notes found in the address book"
 
 @input_error
 def add_tag():
-    title = input("Enter the title where you want to add tags: ").strip()
+    title = input("Please enter the title of the note where you want to add tags: ").strip()
     if title not in notebook.data.keys():
         raise ValueError(f"Note '{title}' not found")
     data_tags = notebook.data[title].tags
-    tags = notebook.tag_conversion(input("Enter a tags: ").strip())
+    tags = notebook.tag_conversion(input("Please enter tags: ").strip())
     tag_list = tags.split(', ')
     unique_tags = ''
     for tag in tag_list:
@@ -421,16 +474,16 @@ def sort_notes_by_tags():
     sorted_notes = notebook.sort_notes_by_tags()
     result = "\nAll notes sorted by tags alphabetically:\n"
     for note in sorted_notes:
-        result += f"\nTitle: {note.title.value}\n"
-        result += f"Author: {note.author.value}\n"
-        result += f"Created at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        result += f"Note: {note.body}\n"
-        result += f"Tags: {note.tags}\n\n"
+        result += f"  Title: {note.title.value}\n"
+        result += f"  Author: {note.author.value}\n"
+        result += f"  Created at: {note.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        result += f"  Note: {note.body}\n"
+        result += f"  Tags: {note.tags}\n\n"
     return result
 
 @input_error
 def find_notes_by_tags():
-    tags = input("Enter the tag by which to start searching: ").strip()
+    tags = input("Please enter the tag by which to start searching: ").strip()
     results = notebook.find_notes_by_tags(tags)
     if not results:
         return f"No notes found with the specified tag: {tags}."
@@ -441,34 +494,33 @@ def find_notes_by_tags():
  
 @input_error
 def remove_tag():
-    title = input("Enter the title from which you want to remove tags: ").strip()
+    title = input("Please enter the title from which you want to remove tags: ").strip()
     if title not in notebook.data.keys():
         raise ValueError(f"Note '{title}' not found")
     data_tags = notebook.data[title].tags
-    tags_to_remove = notebook.tag_conversion(input("Enter tags to remove: ").strip())
+    tags_to_remove = notebook.tag_conversion(input("Please enter tags to remove: ").strip())
     tags_to_remove_list = tags_to_remove.split(', ')
     updated_tags = [tag for tag in data_tags.split(', ') if tag not in tags_to_remove_list]
     notebook.data[title].tags = ', '.join(updated_tags)
-    return 'Tags removed'
-
+    return 'Tags have been removed'
 
 commands = {
     "hello": hello,
     "help": help,
     "add contact": add_contact_interactive,
-    #"add phone": ,
+    "add phone": add_phone,
     "add email": add_email,
-    "add adres": add_address,
-    # "change phone": change_phone,
-    # "change birthday": update_birthday,
-    #"change name": ,
+    "add address": add_address,
+    "change phone": change_phone,
+    "change birthday": update_birthday,
+    "change name": change_name,
     "change email": change_email,
     "change address": change_address,
-    # "remove phone": remove_phone_from_contact,
+    "remove phone": remove_phone_from_contact,
     "remove email": remove_email_from_contact,
     "remove address": remove_address_from_contact,
     "clear all": address_book.clear_all_contacts,
-    "by birthday": search_contact_by_birthday,
+    "search by birthday": search_contact_by_birthday,
     "day to birthday": when_birthday,
     "delete contact": delete_contact,
     "search": search_contacts,
@@ -499,10 +551,13 @@ def choice_action(data, commands):
     return unknown_command, None
 
 def main():
-    filename = input("Enter the filename to load/create the address book: : ").strip()
+    filename = input("Please enter the filename to load/create the Personal Organizer: : ").strip()
     address_book.load_from_disk(filename, notebook)
+    print("\nWelcome to Your Address Book!\nType 'help' to see available commands and instructions.")
+    session = PromptSession(
+        lexer=PygmentsLexer(SqlLexer), completer=sql_completer)
     while True:
-        data = input("\nEnter command: ").lower().strip()
+        data = session.prompt("\nPlease enter the command: ").lower().strip()
         func, args = choice_action(data, commands)
         result = func(args) if args else func()
         print(result)
@@ -512,4 +567,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
